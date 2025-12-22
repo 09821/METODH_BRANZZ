@@ -1,0 +1,685 @@
+-- Spawn Gatos GUI System by branzz
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+
+local Player = Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
+
+-- Criar ScreenGui
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "CatSpawnerGUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.Parent = PlayerGui
+
+-- ==================== TELA DE CARREGAMENTO ====================
+local LoadingFrame = Instance.new("Frame")
+LoadingFrame.Name = "LoadingScreen"
+LoadingFrame.Size = UDim2.new(1, 0, 1, 0)
+LoadingFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+LoadingFrame.BorderSizePixel = 0
+LoadingFrame.ZIndex = 10000
+LoadingFrame.Parent = ScreenGui
+
+-- Gradiente de fundo
+local LoadingGradient = Instance.new("UIGradient")
+LoadingGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 50)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 10, 20))
+}
+LoadingGradient.Rotation = 45
+LoadingGradient.Parent = LoadingFrame
+
+-- Ícone de gato
+local CatIcon = Instance.new("TextLabel")
+CatIcon.Size = UDim2.new(0, 150, 0, 150)
+CatIcon.Position = UDim2.new(0.5, -75, 0.35, -75)
+CatIcon.BackgroundTransparency = 1
+CatIcon.Text = "🐱"
+CatIcon.TextSize = 100
+CatIcon.ZIndex = 10001
+CatIcon.Parent = LoadingFrame
+
+-- Animação do ícone
+spawn(function()
+    while CatIcon.Parent do
+        TweenService:Create(CatIcon, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            Rotation = 10,
+            TextSize = 110
+        }):Play()
+        wait(0.5)
+        TweenService:Create(CatIcon, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            Rotation = -10,
+            TextSize = 100
+        }):Play()
+        wait(0.5)
+    end
+end)
+
+-- Título de carregamento
+local LoadingTitle = Instance.new("TextLabel")
+LoadingTitle.Size = UDim2.new(0, 400, 0, 50)
+LoadingTitle.Position = UDim2.new(0.5, -200, 0.55, 0)
+LoadingTitle.BackgroundTransparency = 1
+LoadingTitle.Text = "Carregando..."
+LoadingTitle.TextColor3 = Color3.fromRGB(100, 200, 255)
+LoadingTitle.Font = Enum.Font.GothamBold
+LoadingTitle.TextSize = 28
+LoadingTitle.ZIndex = 10001
+LoadingTitle.Parent = LoadingFrame
+
+-- Barra de progresso
+local ProgressBar = Instance.new("Frame")
+ProgressBar.Size = UDim2.new(0, 300, 0, 8)
+ProgressBar.Position = UDim2.new(0.5, -150, 0.62, 0)
+ProgressBar.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+ProgressBar.BorderSizePixel = 0
+ProgressBar.ZIndex = 10001
+ProgressBar.Parent = LoadingFrame
+
+local ProgressCorner = Instance.new("UICorner")
+ProgressCorner.CornerRadius = UDim.new(1, 0)
+ProgressCorner.Parent = ProgressBar
+
+local ProgressFill = Instance.new("Frame")
+ProgressFill.Size = UDim2.new(0, 0, 1, 0)
+ProgressFill.BackgroundColor3 = Color3.fromRGB(100, 200, 255)
+ProgressFill.BorderSizePixel = 0
+ProgressFill.ZIndex = 10002
+ProgressFill.Parent = ProgressBar
+
+local FillCorner = Instance.new("UICorner")
+FillCorner.CornerRadius = UDim.new(1, 0)
+FillCorner.Parent = ProgressFill
+
+-- Animação de carregamento
+spawn(function()
+    for i = 0, 100 do
+        ProgressFill.Size = UDim2.new(i / 100, 0, 1, 0)
+        wait(0.03)
+    end
+    wait(0.3)
+    
+    -- Fade out
+    for _, obj in pairs(LoadingFrame:GetDescendants()) do
+        if obj:IsA("GuiObject") then
+            TweenService:Create(obj, TweenInfo.new(0.5), {
+                BackgroundTransparency = 1,
+                TextTransparency = 1
+            }):Play()
+        end
+    end
+    TweenService:Create(LoadingFrame, TweenInfo.new(0.5), {
+        BackgroundTransparency = 1
+    }):Play()
+    
+    wait(0.5)
+    LoadingFrame:Destroy()
+end)
+
+wait(3.5)
+
+-- ==================== GUI PRINCIPAL ====================
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 350, 0, 450)
+MainFrame.Position = UDim2.new(0.5, -175, 0.5, -225)
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 12)
+MainCorner.Parent = MainFrame
+
+local MainStroke = Instance.new("UIStroke")
+MainStroke.Color = Color3.fromRGB(100, 150, 255)
+MainStroke.Thickness = 2
+MainStroke.Parent = MainFrame
+
+-- Barra de título
+local TitleBar = Instance.new("Frame")
+TitleBar.Size = UDim2.new(1, 0, 0, 40)
+TitleBar.BackgroundColor3 = Color3.fromRGB(50, 100, 200)
+TitleBar.BorderSizePixel = 0
+TitleBar.Parent = MainFrame
+
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 12)
+TitleCorner.Parent = TitleBar
+
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Size = UDim2.new(0.7, 0, 1, 0)
+TitleLabel.Position = UDim2.new(0, 10, 0, 0)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Text = "🐱 Spawn gatos || by branzz"
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.TextSize = 16
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.Parent = TitleBar
+
+-- Botão Minimizar
+local MinimizeBtn = Instance.new("TextButton")
+MinimizeBtn.Size = UDim2.new(0, 30, 0, 30)
+MinimizeBtn.Position = UDim2.new(1, -65, 0, 5)
+MinimizeBtn.BackgroundColor3 = Color3.fromRGB(255, 180, 50)
+MinimizeBtn.Text = "−"
+MinimizeBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+MinimizeBtn.Font = Enum.Font.GothamBold
+MinimizeBtn.TextSize = 20
+MinimizeBtn.Parent = TitleBar
+
+local MinCorner = Instance.new("UICorner")
+MinCorner.CornerRadius = UDim.new(0, 6)
+MinCorner.Parent = MinimizeBtn
+
+-- Botão Fechar
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 30, 0, 30)
+CloseBtn.Position = UDim2.new(1, -30, 0, 5)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 70, 70)
+CloseBtn.Text = "×"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.TextSize = 22
+CloseBtn.Parent = TitleBar
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 6)
+CloseCorner.Parent = CloseBtn
+
+-- Container de conteúdo
+local ContentFrame = Instance.new("Frame")
+ContentFrame.Name = "Content"
+ContentFrame.Size = UDim2.new(1, -20, 1, -60)
+ContentFrame.Position = UDim2.new(0, 10, 0, 50)
+ContentFrame.BackgroundTransparency = 1
+ContentFrame.Parent = MainFrame
+
+-- Label "Selecionar Gato:"
+local SelectLabel = Instance.new("TextLabel")
+SelectLabel.Size = UDim2.new(1, 0, 0, 25)
+SelectLabel.Position = UDim2.new(0, 0, 0, 5)
+SelectLabel.BackgroundTransparency = 1
+SelectLabel.Text = "Selecionar Gato:"
+SelectLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+SelectLabel.Font = Enum.Font.GothamBold
+SelectLabel.TextSize = 14
+SelectLabel.TextXAlignment = Enum.TextXAlignment.Left
+SelectLabel.Parent = ContentFrame
+
+-- Botão Dropdown (Seta)
+local DropdownBtn = Instance.new("TextButton")
+DropdownBtn.Name = "DropdownButton"
+DropdownBtn.Size = UDim2.new(1, 0, 0, 45)
+DropdownBtn.Position = UDim2.new(0, 0, 0, 35)
+DropdownBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 60)
+DropdownBtn.BorderSizePixel = 0
+DropdownBtn.Text = ""
+DropdownBtn.Parent = ContentFrame
+
+local DropCorner = Instance.new("UICorner")
+DropCorner.CornerRadius = UDim.new(0, 8)
+DropCorner.Parent = DropdownBtn
+
+local DropStroke = Instance.new("UIStroke")
+DropStroke.Color = Color3.fromRGB(100, 150, 255)
+DropStroke.Thickness = 1
+DropStroke.Parent = DropdownBtn
+
+-- Texto do dropdown
+local DropdownText = Instance.new("TextLabel")
+DropdownText.Size = UDim2.new(1, -40, 1, 0)
+DropdownText.Position = UDim2.new(0, 10, 0, 0)
+DropdownText.BackgroundTransparency = 1
+DropdownText.Text = "Selecione um gato..."
+DropdownText.TextColor3 = Color3.fromRGB(200, 200, 200)
+DropdownText.Font = Enum.Font.Gotham
+DropdownText.TextSize = 14
+DropdownText.TextXAlignment = Enum.TextXAlignment.Left
+DropdownText.Parent = DropdownBtn
+
+-- Seta do dropdown
+local ArrowIcon = Instance.new("TextLabel")
+ArrowIcon.Size = UDim2.new(0, 30, 1, 0)
+ArrowIcon.Position = UDim2.new(1, -30, 0, 0)
+ArrowIcon.BackgroundTransparency = 1
+ArrowIcon.Text = "▼"
+ArrowIcon.TextColor3 = Color3.fromRGB(100, 150, 255)
+ArrowIcon.Font = Enum.Font.GothamBold
+ArrowIcon.TextSize = 16
+ArrowIcon.Parent = DropdownBtn
+
+-- Frame da lista (inicialmente oculto)
+local ListFrame = Instance.new("Frame")
+ListFrame.Name = "ListFrame"
+ListFrame.Size = UDim2.new(1, 0, 0, 0)
+ListFrame.Position = UDim2.new(0, 0, 0, 85)
+ListFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
+ListFrame.BorderSizePixel = 0
+ListFrame.ClipsDescendants = true
+ListFrame.Visible = false
+ListFrame.ZIndex = 100
+ListFrame.Parent = ContentFrame
+
+local ListCorner = Instance.new("UICorner")
+ListCorner.CornerRadius = UDim.new(0, 8)
+ListCorner.Parent = ListFrame
+
+local ListStroke = Instance.new("UIStroke")
+ListStroke.Color = Color3.fromRGB(100, 150, 255)
+ListStroke.Thickness = 2
+ListStroke.Parent = ListFrame
+
+-- Caixa de pesquisa
+local SearchBox = Instance.new("TextBox")
+SearchBox.Size = UDim2.new(1, -20, 0, 35)
+SearchBox.Position = UDim2.new(0, 10, 0, 10)
+SearchBox.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
+SearchBox.BorderSizePixel = 0
+SearchBox.PlaceholderText = "🔍 Pesquisar..."
+SearchBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
+SearchBox.Text = ""
+SearchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+SearchBox.Font = Enum.Font.Gotham
+SearchBox.TextSize = 14
+SearchBox.ClearTextOnFocus = false
+SearchBox.ZIndex = 101
+SearchBox.Parent = ListFrame
+
+local SearchCorner = Instance.new("UICorner")
+SearchCorner.CornerRadius = UDim.new(0, 6)
+SearchCorner.Parent = SearchBox
+
+-- ScrollingFrame para a lista
+local ScrollList = Instance.new("ScrollingFrame")
+ScrollList.Size = UDim2.new(1, -20, 1, -55)
+ScrollList.Position = UDim2.new(0, 10, 0, 50)
+ScrollList.BackgroundTransparency = 1
+ScrollList.BorderSizePixel = 0
+ScrollList.ScrollBarThickness = 4
+ScrollList.ZIndex = 101
+ScrollList.Parent = ListFrame
+
+local ListLayout = Instance.new("UIListLayout")
+ListLayout.Padding = UDim.new(0, 5)
+ListLayout.SortOrder = Enum.SortOrder.Name
+ListLayout.Parent = ScrollList
+
+-- Label de informação (Raridade)
+local InfoLabel = Instance.new("TextLabel")
+InfoLabel.Size = UDim2.new(1, 0, 0, 25)
+InfoLabel.Position = UDim2.new(0, 0, 0, 325)
+InfoLabel.BackgroundTransparency = 1
+InfoLabel.Text = "Raridade: -"
+InfoLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+InfoLabel.Font = Enum.Font.Gotham
+InfoLabel.TextSize = 13
+InfoLabel.TextXAlignment = Enum.TextXAlignment.Left
+InfoLabel.Parent = ContentFrame
+
+-- Botão Spawn
+local SpawnBtn = Instance.new("TextButton")
+SpawnBtn.Size = UDim2.new(1, 0, 0, 50)
+SpawnBtn.Position = UDim2.new(0, 0, 1, -50)
+SpawnBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 255)
+SpawnBtn.Text = "🐱 Spawn"
+SpawnBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpawnBtn.Font = Enum.Font.GothamBold
+SpawnBtn.TextSize = 18
+SpawnBtn.Parent = ContentFrame
+
+local SpawnCorner = Instance.new("UICorner")
+SpawnCorner.CornerRadius = UDim.new(0, 8)
+SpawnCorner.Parent = SpawnBtn
+
+local SpawnStroke = Instance.new("UIStroke")
+SpawnStroke.Color = Color3.fromRGB(30, 100, 200)
+SpawnStroke.Thickness = 2
+SpawnStroke.Parent = SpawnBtn
+
+-- ==================== SISTEMA DE BUSCA DE MODELOS ====================
+local selectedModel = nil
+local selectedRarity = nil
+local allModels = {}
+
+-- Função para buscar modelos
+local function findModels()
+    local models = {}
+    
+    -- Nomes de pastas possíveis
+    local folderNames = {
+        "Things",
+        "Things models",
+        "ThingsModels",
+        "Things Models",
+        "Things Modules",
+        "Things Rarity"
+    }
+    
+    -- Buscar nas pastas
+    for _, folderName in ipairs(folderNames) do
+        local folder = ReplicatedStorage:FindFirstChild(folderName)
+        if folder then
+            -- Buscar modelos diretos
+            for _, child in pairs(folder:GetChildren()) do
+                if child:IsA("Model") or child:IsA("Folder") then
+                    -- Se for pasta, buscar dentro
+                    if child:IsA("Folder") then
+                        for _, subChild in pairs(child:GetChildren()) do
+                            if subChild:IsA("Model") then
+                                local rarity = subChild:FindFirstChild("Rarity") or subChild:GetAttribute("Rarity") or "Unknown"
+                                if typeof(rarity) ~= "string" then
+                                    rarity = tostring(rarity.Value or "Unknown")
+                                end
+                                
+                                table.insert(models, {
+                                    Name = subChild.Name,
+                                    Model = subChild,
+                                    Rarity = rarity
+                                })
+                            end
+                        end
+                    else
+                        -- Modelo direto
+                        local rarity = child:FindFirstChild("Rarity") or child:GetAttribute("Rarity") or "Unknown"
+                        if typeof(rarity) ~= "string" then
+                            rarity = tostring(rarity.Value or "Unknown")
+                        end
+                        
+                        table.insert(models, {
+                            Name = child.Name,
+                            Model = child,
+                            Rarity = rarity
+                        })
+                    end
+                end
+            end
+        end
+    end
+    
+    -- Ordenar alfabeticamente
+    table.sort(models, function(a, b)
+        return a.Name < b.Name
+    end)
+    
+    return models
+end
+
+-- Buscar modelos
+allModels = findModels()
+
+-- Função para criar item da lista
+local function createListItem(modelData)
+    local item = Instance.new("TextButton")
+    item.Name = modelData.Name
+    item.Size = UDim2.new(1, -10, 0, 40)
+    item.BackgroundColor3 = Color3.fromRGB(55, 55, 75)
+    item.BorderSizePixel = 0
+    item.Text = ""
+    item.ZIndex = 102
+    item.Parent = ScrollList
+    
+    local itemCorner = Instance.new("UICorner")
+    itemCorner.CornerRadius = UDim.new(0, 6)
+    itemCorner.Parent = item
+    
+    -- Nome do modelo
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Size = UDim2.new(0.7, 0, 1, 0)
+    nameLabel.Position = UDim2.new(0, 10, 0, 0)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.Text = modelData.Name
+    nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    nameLabel.Font = Enum.Font.GothamBold
+    nameLabel.TextSize = 13
+    nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+    nameLabel.TextTruncate = Enum.TextTruncate.AtEnd
+    nameLabel.ZIndex = 103
+    nameLabel.Parent = item
+    
+    -- Raridade
+    local rarityLabel = Instance.new("TextLabel")
+    rarityLabel.Size = UDim2.new(0.3, -10, 1, 0)
+    rarityLabel.Position = UDim2.new(0.7, 0, 0, 0)
+    rarityLabel.BackgroundTransparency = 1
+    rarityLabel.Text = modelData.Rarity
+    rarityLabel.TextColor3 = Color3.fromRGB(255, 200, 100)
+    rarityLabel.Font = Enum.Font.Gotham
+    rarityLabel.TextSize = 11
+    rarityLabel.TextXAlignment = Enum.TextXAlignment.Right
+    rarityLabel.ZIndex = 103
+    rarityLabel.Parent = item
+    
+    -- Hover effect
+    item.MouseEnter:Connect(function()
+        item.BackgroundColor3 = Color3.fromRGB(70, 70, 95)
+    end)
+    
+    item.MouseLeave:Connect(function()
+        item.BackgroundColor3 = Color3.fromRGB(55, 55, 75)
+    end)
+    
+    -- Click event
+    item.MouseButton1Click:Connect(function()
+        selectedModel = modelData.Model
+        selectedRarity = modelData.Rarity
+        DropdownText.Text = modelData.Name
+        InfoLabel.Text = "Raridade: " .. modelData.Rarity
+        
+        -- Fechar lista
+        ListFrame.Visible = false
+        TweenService:Create(ListFrame, TweenInfo.new(0.2), {
+            Size = UDim2.new(1, 0, 0, 0)
+        }):Play()
+        TweenService:Create(ArrowIcon, TweenInfo.new(0.2), {
+            Rotation = 0
+        }):Play()
+    end)
+    
+    return item
+end
+
+-- Popular lista inicial
+for _, modelData in ipairs(allModels) do
+    createListItem(modelData)
+end
+
+-- Atualizar tamanho do canvas
+ScrollList.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y + 10)
+ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    ScrollList.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y + 10)
+end)
+
+-- Sistema de pesquisa
+SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
+    local searchText = SearchBox.Text:lower()
+    
+    for _, item in pairs(ScrollList:GetChildren()) do
+        if item:IsA("TextButton") then
+            if searchText == "" or item.Name:lower():find(searchText) then
+                item.Visible = true
+            else
+                item.Visible = false
+            end
+        end
+    end
+end)
+
+-- ==================== CONTROLES DA GUI ====================
+local isDropdownOpen = false
+local isMinimized = false
+local originalSize = MainFrame.Size
+
+-- Toggle Dropdown
+DropdownBtn.MouseButton1Click:Connect(function()
+    isDropdownOpen = not isDropdownOpen
+    
+    if isDropdownOpen then
+        ListFrame.Visible = true
+        TweenService:Create(ListFrame, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Size = UDim2.new(1, 0, 0, 230)
+        }):Play()
+        TweenService:Create(ArrowIcon, TweenInfo.new(0.2), {
+            Rotation = 180
+        }):Play()
+    else
+        TweenService:Create(ListFrame, TweenInfo.new(0.2), {
+            Size = UDim2.new(1, 0, 0, 0)
+        }):Play()
+        TweenService:Create(ArrowIcon, TweenInfo.new(0.2), {
+            Rotation = 0
+        }):Play()
+        task.wait(0.2)
+        ListFrame.Visible = false
+    end
+end)
+
+-- Minimizar
+MinimizeBtn.MouseButton1Click:Connect(function()
+    isMinimized = not isMinimized
+    
+    if isMinimized then
+        TweenService:Create(MainFrame, TweenInfo.new(0.3), {
+            Size = UDim2.new(0, 350, 0, 40)
+        }):Play()
+        MinimizeBtn.Text = "+"
+        ContentFrame.Visible = false
+    else
+        TweenService:Create(MainFrame, TweenInfo.new(0.3), {
+            Size = originalSize
+        }):Play()
+        MinimizeBtn.Text = "−"
+        ContentFrame.Visible = true
+    end
+end)
+
+-- Fechar
+CloseBtn.MouseButton1Click:Connect(function()
+    TweenService:Create(MainFrame, TweenInfo.new(0.3), {
+        Size = UDim2.new(0, 0, 0, 0),
+        Position = UDim2.new(0.5, 0, 0.5, 0)
+    }):Play()
+    wait(0.3)
+    ScreenGui:Destroy()
+end)
+
+-- Hover effects
+MinimizeBtn.MouseEnter:Connect(function()
+    TweenService:Create(MinimizeBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 200, 80)}):Play()
+end)
+MinimizeBtn.MouseLeave:Connect(function()
+    TweenService:Create(MinimizeBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 180, 50)}):Play()
+end)
+
+CloseBtn.MouseEnter:Connect(function()
+    TweenService:Create(CloseBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 100, 100)}):Play()
+end)
+CloseBtn.MouseLeave:Connect(function()
+    TweenService:Create(CloseBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 70, 70)}):Play()
+end)
+
+SpawnBtn.MouseEnter:Connect(function()
+    TweenService:Create(SpawnBtn, TweenInfo.new(0.2), {
+        BackgroundColor3 = Color3.fromRGB(70, 180, 255),
+        Size = UDim2.new(1, 0, 0, 53)
+    }):Play()
+end)
+SpawnBtn.MouseLeave:Connect(function()
+    TweenService:Create(SpawnBtn, TweenInfo.new(0.2), {
+        BackgroundColor3 = Color3.fromRGB(50, 150, 255),
+        Size = UDim2.new(1, 0, 0, 50)
+    }):Play()
+end)
+
+-- ==================== SISTEMA DE SPAWN ====================
+SpawnBtn.MouseButton1Click:Connect(function()
+    if not selectedModel then
+        SpawnBtn.Text = "❌ Selecione um gato!"
+        wait(1.5)
+        SpawnBtn.Text = "🐱 Spawn"
+        return
+    end
+    
+    -- Feedback visual
+    SpawnBtn.Text = "⏳ Spawnando..."
+    SpawnBtn.BackgroundColor3 = Color3.fromRGB(255, 180, 50)
+    
+    -- Encontrar Waypoint
+    local waypoint = Workspace:FindFirstChild("Waypoints")
+    if waypoint then
+        waypoint = waypoint:FindFirstChild("Waypoint 1") or waypoint:FindFirstChild("Waypoint1")
+    end
+    
+    if not waypoint then
+        waypoint = Workspace:FindFirstChild("Waypoint 1") or Workspace:FindFirstChild("Waypoint1")
+    end
+    
+    if not waypoint then
+        SpawnBtn.Text = "❌ Waypoint não encontrado!"
+        SpawnBtn.BackgroundColor3 = Color3.fromRGB(255, 70, 70)
+        wait(2)
+        SpawnBtn.Text = "🐱 Spawn"
+        SpawnBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 255)
+        return
+    end
+    
+    -- Tentar ativar RemoteEvents relacionados
+    pcall(function()
+        for _, remote in pairs(ReplicatedStorage:GetDescendants()) do
+            if remote:IsA("RemoteEvent") or remote:IsA("RemoteFunction") then
+                pcall(function()
+                    if remote:IsA("RemoteEvent") then
+                        remote:FireServer("SpawnThing", {
+                            Name = selectedModel.Name,
+                            Model = selectedModel,
+                            Position = waypoint.Position
+                        })
+                        
+                        remote:FireServer("Spawn", selectedModel.Name, waypoint.Position)
+                    end
+                end)
+            end
+        end
+    end)
+    
+    -- Clonar e posicionar modelo
+    pcall(function()
+        local clone = selectedModel:Clone()
+        
+        -- Posicionar no waypoint
+        if clone.PrimaryPart then
+            clone:SetPrimaryPartCFrame(waypoint.CFrame + Vector3.new(0, 5, 0))
+        elseif clone:FindFirstChildWhichIsA("BasePart") then
+            clone:FindFirstChildWhichIsA("BasePart").CFrame = waypoint.CFrame + Vector3.new(0, 5, 0)
+        end
+        
+        clone.Parent = Workspace
+        
+        -- Ativar scripts do modelo
+        for _, script in pairs(clone:GetDescendants()) do
+            if script:IsA("Script") or script:IsA("LocalScript") then
+                script.Disabled = false
+            end
+        end
+        
+        print("🐱 Gato spawnado: " .. selectedModel.Name .. " em Waypoint 1")
+    end)
+    
+    -- Feedback de sucesso
+    wait(0.5)
+    SpawnBtn.Text = "✅ Spawnado!"
+    SpawnBtn.BackgroundColor3 = Color3.fromRGB(50, 255, 100)
+    
+    wait(1.5)
+    SpawnBtn.Text = "🐱 Spawn"
+    SpawnBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 255)
+end)
+
+print("🐱 Spawn Gatos GUI carregado com sucesso!")
+print("📊 Total de modelos encontrados: " .. #allModels)
