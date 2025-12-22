@@ -1,0 +1,937 @@
+-- Loader Natalino COMPLETO com Admin Panel Integrado
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Player = Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
+
+-- Criar ScreenGui principal
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ChristmasAdminLoader"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.Parent = PlayerGui
+
+-- ==================== TELA DE CARREGAMENTO FULL SCREEN ====================
+local LoadingFrame = Instance.new("Frame")
+LoadingFrame.Name = "LoadingFrame"
+LoadingFrame.Size = UDim2.new(1, 0, 1, 0)
+LoadingFrame.Position = UDim2.new(0, 0, 0, 0)
+LoadingFrame.BackgroundColor3 = Color3.fromRGB(10, 15, 30)
+LoadingFrame.BorderSizePixel = 0
+LoadingFrame.ZIndex = 10000
+LoadingFrame.Parent = ScreenGui
+
+-- Gradiente animado de fundo
+local Gradient = Instance.new("UIGradient")
+Gradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(139, 0, 0)),
+    ColorSequenceKeypoint.new(0.3, Color3.fromRGB(0, 100, 0)),
+    ColorSequenceKeypoint.new(0.6, Color3.fromRGB(200, 50, 50)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 80, 0))
+}
+Gradient.Rotation = 0
+Gradient.Parent = LoadingFrame
+
+-- Animação do gradiente girando
+spawn(function()
+    while LoadingFrame.Parent do
+        for i = 0, 360, 2 do
+            if not LoadingFrame.Parent then break end
+            Gradient.Rotation = i
+            wait(0.03)
+        end
+    end
+end)
+
+-- Efeito de brilho pulsante
+local GlowFrame = Instance.new("Frame")
+GlowFrame.Size = UDim2.new(1, 0, 1, 0)
+GlowFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+GlowFrame.BackgroundTransparency = 0.95
+GlowFrame.BorderSizePixel = 0
+GlowFrame.ZIndex = 10001
+GlowFrame.Parent = LoadingFrame
+
+spawn(function()
+    while GlowFrame.Parent do
+        TweenService:Create(GlowFrame, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            BackgroundTransparency = 0.85
+        }):Play()
+        wait(1.5)
+        TweenService:Create(GlowFrame, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            BackgroundTransparency = 0.95
+        }):Play()
+        wait(1.5)
+    end
+end)
+
+-- Flocos de neve melhorados
+for i = 1, 30 do
+    local Snowflake = Instance.new("TextLabel")
+    Snowflake.Size = UDim2.new(0, math.random(15, 35), 0, math.random(15, 35))
+    Snowflake.Position = UDim2.new(math.random(), 0, math.random(-100, 0) / 100, 0)
+    Snowflake.BackgroundTransparency = 1
+    Snowflake.Text = "❄"
+    Snowflake.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Snowflake.TextSize = math.random(16, 32)
+    Snowflake.TextTransparency = math.random(0, 40) / 100
+    Snowflake.ZIndex = 10002
+    Snowflake.Rotation = math.random(0, 360)
+    Snowflake.Parent = LoadingFrame
+    
+    spawn(function()
+        while Snowflake.Parent do
+            local duration = math.random(4, 8)
+            local endX = Snowflake.Position.X.Scale + (math.random(-20, 20) / 100)
+            local tween = TweenService:Create(Snowflake, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
+                Position = UDim2.new(endX, 0, 1.3, 0),
+                Rotation = Snowflake.Rotation + math.random(180, 360)
+            })
+            tween:Play()
+            tween.Completed:Wait()
+            Snowflake.Position = UDim2.new(math.random(), 0, -0.15, 0)
+            Snowflake.Rotation = math.random(0, 360)
+        end
+    end)
+end
+
+-- Árvore de Natal decorativa
+local Tree = Instance.new("TextLabel")
+Tree.Size = UDim2.new(0, 200, 0, 200)
+Tree.Position = UDim2.new(0.5, -100, 0.15, 0)
+Tree.BackgroundTransparency = 1
+Tree.Text = "🎄"
+Tree.TextColor3 = Color3.fromRGB(0, 255, 100)
+Tree.TextSize = 120
+Tree.ZIndex = 10003
+Tree.Parent = LoadingFrame
+
+-- Animação da árvore
+spawn(function()
+    while Tree.Parent do
+        TweenService:Create(Tree, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            Rotation = 5,
+            TextSize = 130
+        }):Play()
+        wait(2)
+        TweenService:Create(Tree, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            Rotation = -5,
+            TextSize = 120
+        }):Play()
+        wait(2)
+    end
+end)
+
+-- Título principal animado
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(0, 800, 0, 80)
+Title.Position = UDim2.new(0.5, -400, 0.4, -40)
+Title.BackgroundTransparency = 1
+Title.Text = "🎅 FELIZ NATAL! 🎄"
+Title.TextColor3 = Color3.fromRGB(255, 215, 0)
+Title.Font = Enum.Font.FredokaOne
+Title.TextSize = 58
+Title.TextStrokeTransparency = 0.3
+Title.TextStrokeColor3 = Color3.fromRGB(200, 0, 0)
+Title.ZIndex = 10004
+Title.Parent = LoadingFrame
+
+-- Animação do título pulsando
+spawn(function()
+    while Title.Parent do
+        TweenService:Create(Title, TweenInfo.new(0.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            TextSize = 62,
+            TextColor3 = Color3.fromRGB(255, 100, 100)
+        }):Play()
+        wait(0.8)
+        TweenService:Create(Title, TweenInfo.new(0.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            TextSize = 58,
+            TextColor3 = Color3.fromRGB(255, 215, 0)
+        }):Play()
+        wait(0.8)
+    end
+end)
+
+-- Subtítulo
+local Subtitle = Instance.new("TextLabel")
+Subtitle.Size = UDim2.new(0, 600, 0, 40)
+Subtitle.Position = UDim2.new(0.5, -300, 0.48, 0)
+Subtitle.BackgroundTransparency = 1
+Subtitle.Text = "Roube Um Gato - Admin Panel"
+Subtitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+Subtitle.Font = Enum.Font.GothamBold
+Subtitle.TextSize = 24
+Subtitle.TextStrokeTransparency = 0.5
+Subtitle.ZIndex = 10004
+Subtitle.Parent = LoadingFrame
+
+-- Container da barra
+local BarContainer = Instance.new("Frame")
+BarContainer.Size = UDim2.new(0, 600, 0, 50)
+BarContainer.Position = UDim2.new(0.5, -300, 0.6, 0)
+BarContainer.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+BarContainer.BorderSizePixel = 0
+BarContainer.ZIndex = 10004
+BarContainer.Parent = LoadingFrame
+
+local ContainerCorner = Instance.new("UICorner")
+ContainerCorner.CornerRadius = UDim.new(0, 25)
+ContainerCorner.Parent = BarContainer
+
+local ContainerStroke = Instance.new("UIStroke")
+ContainerStroke.Color = Color3.fromRGB(255, 215, 0)
+ContainerStroke.Thickness = 3
+ContainerStroke.Parent = BarContainer
+
+-- Barra de progresso
+local BarFill = Instance.new("Frame")
+BarFill.Size = UDim2.new(0, 0, 0.8, 0)
+BarFill.Position = UDim2.new(0, 5, 0.1, 0)
+BarFill.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+BarFill.BorderSizePixel = 0
+BarFill.ZIndex = 10005
+BarFill.Parent = BarContainer
+
+local FillCorner = Instance.new("UICorner")
+FillCorner.CornerRadius = UDim.new(0, 20)
+FillCorner.Parent = BarFill
+
+local FillGradient = Instance.new("UIGradient")
+FillGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 50, 50)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 215, 0)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 255, 50))
+}
+FillGradient.Parent = BarFill
+
+-- Brilho na barra
+local BarGlow = Instance.new("Frame")
+BarGlow.Size = UDim2.new(0.3, 0, 1.5, 0)
+BarGlow.Position = UDim2.new(-0.3, 0, -0.25, 0)
+BarGlow.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+BarGlow.BackgroundTransparency = 0.5
+BarGlow.BorderSizePixel = 0
+BarGlow.ZIndex = 10006
+BarGlow.Parent = BarFill
+
+local GlowGradient = Instance.new("UIGradient")
+GlowGradient.Transparency = NumberSequence.new{
+    NumberSequenceKeypoint.new(0, 1),
+    NumberSequenceKeypoint.new(0.5, 0.3),
+    NumberSequenceKeypoint.new(1, 1)
+}
+GlowGradient.Rotation = 90
+GlowGradient.Parent = BarGlow
+
+-- Contador de porcentagem
+local Counter = Instance.new("TextLabel")
+Counter.Size = UDim2.new(1, 0, 1, 0)
+Counter.BackgroundTransparency = 1
+Counter.Text = "0%"
+Counter.TextColor3 = Color3.fromRGB(255, 255, 255)
+Counter.Font = Enum.Font.GothamBold
+Counter.TextSize = 24
+Counter.TextStrokeTransparency = 0.5
+Counter.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+Counter.ZIndex = 10007
+Counter.Parent = BarContainer
+
+-- Texto de status
+local StatusText = Instance.new("TextLabel")
+StatusText.Size = UDim2.new(0, 600, 0, 30)
+StatusText.Position = UDim2.new(0.5, -300, 0.7, 0)
+StatusText.BackgroundTransparency = 1
+StatusText.Text = "Inicializando sistema..."
+StatusText.TextColor3 = Color3.fromRGB(200, 200, 255)
+StatusText.Font = Enum.Font.Gotham
+StatusText.TextSize = 18
+StatusText.ZIndex = 10004
+StatusText.Parent = LoadingFrame
+
+-- Mensagens de carregamento
+local loadingMessages = {
+    "Inicializando sistema...",
+    "Decorando a árvore de Natal...",
+    "Preparando presentes...",
+    "Chamando o Papai Noel...",
+    "Verificando lista de bons e maus...",
+    "Ativando poderes de admin...",
+    "Carregando comandos especiais...",
+    "Finalizando instalação...",
+    "Pronto para usar! 🎅"
+}
+
+-- Animação de carregamento
+spawn(function()
+    for i = 0, 100 do
+        wait(0.05)
+        
+        -- Atualizar barra
+        local targetWidth = (590 * i / 100)
+        TweenService:Create(BarFill, TweenInfo.new(0.05), {
+            Size = UDim2.new(0, targetWidth, 0.8, 0)
+        }):Play()
+        
+        -- Atualizar contador
+        Counter.Text = i .. "%"
+        
+        -- Animar brilho
+        if i % 10 == 0 then
+            spawn(function()
+                TweenService:Create(BarGlow, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                    Position = UDim2.new(1.2, 0, -0.25, 0)
+                }):Play()
+                wait(0.5)
+                BarGlow.Position = UDim2.new(-0.3, 0, -0.25, 0)
+            end)
+        end
+        
+        -- Atualizar mensagem
+        local messageIndex = math.floor(i / 12) + 1
+        if messageIndex <= #loadingMessages then
+            StatusText.Text = loadingMessages[messageIndex]
+        end
+    end
+    
+    wait(0.8)
+    
+    -- Fade out épico
+    StatusText.Text = "🎄 Carregamento completo! 🎄"
+    StatusText.TextColor3 = Color3.fromRGB(50, 255, 50)
+    
+    wait(0.5)
+    
+    for _, obj in pairs(LoadingFrame:GetDescendants()) do
+        if obj:IsA("GuiObject") then
+            TweenService:Create(obj, TweenInfo.new(0.8), {
+                BackgroundTransparency = 1,
+                TextTransparency = 1
+            }):Play()
+        end
+    end
+    
+    TweenService:Create(LoadingFrame, TweenInfo.new(0.8), {
+        BackgroundTransparency = 1
+    }):Play()
+    
+    wait(0.8)
+    LoadingFrame:Destroy()
+end)
+
+wait(6)
+
+-- ==================== MINI GUI MELHORADA ====================
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainAdminGUI"
+MainFrame.Size = UDim2.new(0, 400, 0, 280)
+MainFrame.Position = UDim2.new(0.5, -200, 0.5, -140)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.ZIndex = 5000
+MainFrame.Parent = ScreenGui
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 15)
+MainCorner.Parent = MainFrame
+
+local MainStroke = Instance.new("UIStroke")
+MainStroke.Color = Color3.fromRGB(255, 100, 100)
+MainStroke.Thickness = 3
+MainStroke.Parent = MainFrame
+
+local MainGradient = Instance.new("UIGradient")
+MainGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 40)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 20, 30))
+}
+MainGradient.Rotation = 90
+MainGradient.Parent = MainFrame
+
+-- Barra de título melhorada
+local TitleBar = Instance.new("Frame")
+TitleBar.Size = UDim2.new(1, 0, 0, 45)
+TitleBar.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+TitleBar.BorderSizePixel = 0
+TitleBar.ZIndex = 5001
+TitleBar.Parent = MainFrame
+
+local TitleGradient = Instance.new("UIGradient")
+TitleGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(200, 50, 50)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 100, 50)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 50, 50))
+}
+TitleGradient.Parent = TitleBar
+
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 15)
+TitleCorner.Parent = TitleBar
+
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Size = UDim2.new(0.65, 0, 1, 0)
+TitleLabel.Position = UDim2.new(0, 15, 0, 0)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Text = "🎄 Roube Um gato || Free admin"
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.Font = Enum.Font.FredokaOne
+TitleLabel.TextSize = 16
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.TextStrokeTransparency = 0.5
+TitleLabel.ZIndex = 5002
+TitleLabel.Parent = TitleBar
+
+-- Ícone de Natal
+local ChristmasIcon = Instance.new("TextLabel")
+ChristmasIcon.Size = UDim2.new(0, 30, 0, 30)
+ChristmasIcon.Position = UDim2.new(0, -35, 0.5, -15)
+ChristmasIcon.BackgroundTransparency = 1
+ChristmasIcon.Text = "🎅"
+ChristmasIcon.TextSize = 24
+ChristmasIcon.ZIndex = 5002
+ChristmasIcon.Parent = TitleLabel
+
+-- Botão Minimizar
+local MinimizeBtn = Instance.new("TextButton")
+MinimizeBtn.Size = UDim2.new(0, 35, 0, 35)
+MinimizeBtn.Position = UDim2.new(1, -80, 0, 5)
+MinimizeBtn.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
+MinimizeBtn.Text = "−"
+MinimizeBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+MinimizeBtn.Font = Enum.Font.GothamBold
+MinimizeBtn.TextSize = 24
+MinimizeBtn.ZIndex = 5002
+MinimizeBtn.Parent = TitleBar
+
+local MinCorner = Instance.new("UICorner")
+MinCorner.CornerRadius = UDim.new(0, 8)
+MinCorner.Parent = MinimizeBtn
+
+local MinStroke = Instance.new("UIStroke")
+MinStroke.Color = Color3.fromRGB(200, 150, 0)
+MinStroke.Thickness = 2
+MinStroke.Parent = MinimizeBtn
+
+-- Botão Fechar
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 35, 0, 35)
+CloseBtn.Position = UDim2.new(1, -40, 0, 5)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 70, 70)
+CloseBtn.Text = "×"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.TextSize = 28
+CloseBtn.ZIndex = 5002
+CloseBtn.Parent = TitleBar
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 8)
+CloseCorner.Parent = CloseBtn
+
+local CloseStroke = Instance.new("UIStroke")
+CloseStroke.Color = Color3.fromRGB(200, 30, 30)
+CloseStroke.Thickness = 2
+CloseStroke.Parent = CloseBtn
+
+-- Conteúdo
+local ContentFrame = Instance.new("Frame")
+ContentFrame.Name = "Content"
+ContentFrame.Size = UDim2.new(1, -30, 1, -60)
+ContentFrame.Position = UDim2.new(0, 15, 0, 50)
+ContentFrame.BackgroundTransparency = 1
+ContentFrame.ZIndex = 5001
+ContentFrame.Parent = MainFrame
+
+-- Decoração natalina no conteúdo
+local DecoLine = Instance.new("Frame")
+DecoLine.Size = UDim2.new(1, 0, 0, 2)
+DecoLine.Position = UDim2.new(0, 0, 0, 0)
+DecoLine.BorderSizePixel = 0
+DecoLine.ZIndex = 5002
+DecoLine.Parent = ContentFrame
+
+local DecoGradient = Instance.new("UIGradient")
+DecoGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 215, 0)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 255, 0))
+}
+DecoGradient.Parent = DecoLine
+
+-- Info do jogador
+local PlayerInfo = Instance.new("TextLabel")
+PlayerInfo.Size = UDim2.new(1, 0, 0, 25)
+PlayerInfo.Position = UDim2.new(0, 0, 0, 10)
+PlayerInfo.BackgroundTransparency = 1
+PlayerInfo.Text = "👤 Jogador: " .. Player.Name
+PlayerInfo.TextColor3 = Color3.fromRGB(150, 255, 150)
+PlayerInfo.Font = Enum.Font.GothamBold
+PlayerInfo.TextSize = 16
+PlayerInfo.TextXAlignment = Enum.TextXAlignment.Left
+PlayerInfo.ZIndex = 5002
+PlayerInfo.Parent = ContentFrame
+
+-- Botão Ativar Admin (maior e melhor)
+local ActivateBtn = Instance.new("TextButton")
+ActivateBtn.Size = UDim2.new(1, 0, 0, 65)
+ActivateBtn.Position = UDim2.new(0, 0, 0, 50)
+ActivateBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+ActivateBtn.Text = "🎅 ATIVAR ADMIN PANEL 🎄"
+ActivateBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ActivateBtn.Font = Enum.Font.FredokaOne
+ActivateBtn.TextSize = 22
+ActivateBtn.ZIndex = 5002
+ActivateBtn.Parent = ContentFrame
+
+local ActCorner = Instance.new("UICorner")
+ActCorner.CornerRadius = UDim.new(0, 12)
+ActCorner.Parent = ActivateBtn
+
+local ActStroke = Instance.new("UIStroke")
+ActStroke.Color = Color3.fromRGB(30, 150, 30)
+ActStroke.Thickness = 3
+ActStroke.Parent = ActivateBtn
+
+local ActGradient = Instance.new("UIGradient")
+ActGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 200, 50)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(100, 255, 100)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 200, 50))
+}
+ActGradient.Parent = ActivateBtn
+
+-- Efeito hover no botão
+ActivateBtn.MouseEnter:Connect(function()
+    TweenService:Create(ActivateBtn, TweenInfo.new(0.2), {
+        Size = UDim2.new(1, 5, 0, 70),
+        BackgroundColor3 = Color3.fromRGB(70, 255, 70)
+    }):Play()
+end)
+
+ActivateBtn.MouseLeave:Connect(function()
+    TweenService:Create(ActivateBtn, TweenInfo.new(0.2), {
+        Size = UDim2.new(1, 0, 0, 65),
+        BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+    }):Play()
+end)
+
+-- Botão Executar Scripts CMD
+local CmdBtn = Instance.new("TextButton")
+CmdBtn.Size = UDim2.new(1, 0, 0, 50)
+CmdBtn.Position = UDim2.new(0, 0, 0, 125)
+CmdBtn.BackgroundColor3 = Color3.fromRGB(50, 100, 200)
+CmdBtn.Text = "📁 Executar Scripts CMD"
+CmdBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CmdBtn.Font = Enum.Font.GothamBold
+CmdBtn.TextSize = 18
+CmdBtn.ZIndex = 5002
+CmdBtn.Parent = ContentFrame
+
+local CmdCorner = Instance.new("UICorner")
+CmdCorner.CornerRadius = UDim.new(0, 10)
+CmdCorner.Parent = CmdBtn
+
+local CmdStroke = Instance.new("UIStroke")
+CmdStroke.Color = Color3.fromRGB(30, 70, 150)
+CmdStroke.Thickness = 2
+CmdStroke.Parent = CmdBtn
+
+-- Status melhorado
+local StatusLabel = Instance.new("TextLabel")
+StatusLabel.Size = UDim2.new(1, 0, 0, 35)
+StatusLabel.Position = UDim2.new(0, 0, 1, -40)
+StatusLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+StatusLabel.BorderSizePixel = 0
+StatusLabel.Text = "⏳ Status: Aguardando ativação..."
+StatusLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
+StatusLabel.Font = Enum.Font.Gotham
+StatusLabel.TextSize = 14
+StatusLabel.ZIndex = 5002
+StatusLabel.Parent = ContentFrame
+
+local StatusCorner = Instance.new("UICorner")
+StatusCorner.CornerRadius = UDim.new(0, 8)
+StatusCorner.Parent = StatusLabel
+
+local StatusStroke = Instance.new("UIStroke")
+StatusStroke.Color = Color3.fromRGB(255, 200, 0)
+StatusStroke.Thickness = 1
+StatusStroke.Parent = StatusLabel
+
+-- Variáveis
+local isMinimized = false
+local originalSize = MainFrame.Size
+local adminActivated = false
+
+-- Efeitos de hover nos botões de controle
+MinimizeBtn.MouseEnter:Connect(function()
+    TweenService:Create(MinimizeBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 230, 50)}):Play()
+end)
+MinimizeBtn.MouseLeave:Connect(function()
+    TweenService:Create(MinimizeBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 200, 0)}):Play()
+end)
+
+CloseBtn.MouseEnter:Connect(function()
+    TweenService:Create(CloseBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 100, 100)}):Play()
+end)
+CloseBtn.MouseLeave:Connect(function()
+    TweenService:Create(CloseBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 70, 70)}):Play()
+end)
+
+-- Função Minimizar/Maximizar
+MinimizeBtn.MouseButton1Click:Connect(function()
+    isMinimized = not isMinimized
+    if isMinimized then
+        MainFrame:TweenSize(UDim2.new(0, 400, 0, 45), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.3, true)
+        MinimizeBtn.Text = "+"
+        ContentFrame.Visible = false
+    else
+        MainFrame:TweenSize(originalSize, Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.3, true)
+        MinimizeBtn.Text = "−"
+        ContentFrame.Visible = true
+    end
+end)
+
+-- Função Fechar
+CloseBtn.MouseButton1Click:Connect(function()
+    TweenService:Create(MainFrame, TweenInfo.new(0.3), {
+        Size = UDim2.new(0, 0, 0, 0),
+        Position = UDim2.new(0.5, 0, 0.5, 0)
+    }):Play()
+    wait(0.3)
+    ScreenGui:Destroy()
+end)
+
+-- CÓDIGO DO ADMIN PANEL DO ARQUIVO (adaptado)
+local function executeAdminPanel()
+    StatusLabel.Text = "⚙️ Status: Carregando Admin Panel..."
+    StatusLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
+    StatusStroke.Color = Color3.fromRGB(255, 200, 0)
+    
+    wait(0.5)
+    
+    -- Criar o Admin Panel GUI
+    local AdminGUI = Instance.new("ScreenGui")
+    AdminGUI.Name = "AdminPanelGUI"
+    AdminGUI.ResetOnSpawn = false
+    AdminGUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    AdminGUI.Parent = PlayerGui
+    
+    -- Aqui você coloca todo o código do admin panel
+    -- Vou criar uma versão simplificada baseada no arquivo
+    
+    local v2 = ReplicatedStorage
+    local v20 = v2:FindFirstChild("Remotes") and v2.Remotes:FindFirstChild("Events") and v2.Remotes.Events:FindFirstChild("AdminAction")
+    
+    if not v20 then
+        v20 = v2:FindFirstChild("AdminAction")
+    end
+    
+    if not v20 then
+        -- Criar remote se não existir
+        local Remotes = v2:FindFirstChild("Remotes") or Instance.new("Folder")
+        Remotes.Name = "Remotes"
+        Remotes.Parent = v2
+        
+        local Events = Remotes:FindFirstChild("Events") or Instance.new("Folder")
+        Events.Name = "Events"
+        Events.Parent = Remotes
+        
+        v20 = Instance.new("RemoteEvent")
+        v20.Name = "AdminAction"
+        v20.Parent = Events
+    end
+    
+    -- Criar frame principal do admin
+    local AdminFrame = Instance.new("Frame")
+    AdminFrame.Name = "AdminFrame"
+    AdminFrame.Size = UDim2.new(0, 600, 0, 400)
+    AdminFrame.Position = UDim2.new(0.5, -300, 0.5, -200)
+    AdminFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    AdminFrame.BorderSizePixel = 0
+    AdminFrame.Active = true
+    AdminFrame.Draggable = true
+    AdminFrame.Visible = false
+    AdminFrame.Parent = AdminGUI
+    
+    local AdminCorner = Instance.new("UICorner")
+    AdminCorner.CornerRadius = UDim.new(0, 12)
+    AdminCorner.Parent = AdminFrame
+    
+    -- Botão para abrir o painel
+    local OpenPanel = Instance.new("TextButton")
+    OpenPanel.Name = "OpenPanel"
+    OpenPanel.Size = UDim2.new(0, 150, 0, 40)
+    OpenPanel.Position = UDim2.new(0, 10, 0, 10)
+    OpenPanel.BackgroundColor3 = Color3.fromRGB(85, 170, 255)
+    OpenPanel.Text = "Admin Panel"
+    OpenPanel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    OpenPanel.Font = Enum.Font.GothamBold
+    OpenPanel.TextSize = 16
+    OpenPanel.Parent = AdminGUI
+    
+    local OpenCorner = Instance.new("UICorner")
+    OpenCorner.CornerRadius = UDim.new(0, 8)
+    OpenCorner.Parent = OpenPanel
+    
+    OpenPanel.MouseButton1Click:Connect(function()
+        AdminFrame.Visible = not AdminFrame.Visible
+    end)
+    
+    -- Título do Admin Panel
+    local AdminTitle = Instance.new("TextLabel")
+    AdminTitle.Size = UDim2.new(1, -20, 0, 40)
+    AdminTitle.Position = UDim2.new(0, 10, 0, 10)
+    AdminTitle.BackgroundTransparency = 1
+    AdminTitle.Text = "Admin Panel - " .. Player.Name
+    AdminTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    AdminTitle.Font = Enum.Font.FredokaOne
+    AdminTitle.TextSize = 20
+    AdminTitle.TextXAlignment = Enum.TextXAlignment.Left
+    AdminTitle.Parent = AdminFrame
+    
+    -- Botão fechar admin
+    local CloseAdmin = Instance.new("TextButton")
+    CloseAdmin.Size = UDim2.new(0, 30, 0, 30)
+    CloseAdmin.Position = UDim2.new(1, -40, 0, 10)
+    CloseAdmin.BackgroundColor3 = Color3.fromRGB(255, 70, 70)
+    CloseAdmin.Text = "×"
+    CloseAdmin.TextColor3 = Color3.fromRGB(255, 255, 255)
+    CloseAdmin.Font = Enum.Font.GothamBold
+    CloseAdmin.TextSize = 20
+    CloseAdmin.Parent = AdminFrame
+    
+    local CloseAdminCorner = Instance.new("UICorner")
+    CloseAdminCorner.CornerRadius = UDim.new(0, 6)
+    CloseAdminCorner.Parent = CloseAdmin
+    
+    CloseAdmin.MouseButton1Click:Connect(function()
+        AdminFrame.Visible = false
+    end)
+    
+    -- Container de comandos
+    local CommandsContainer = Instance.new("ScrollingFrame")
+    CommandsContainer.Size = UDim2.new(1, -20, 1, -70)
+    CommandsContainer.Position = UDim2.new(0, 10, 0, 55)
+    CommandsContainer.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+    CommandsContainer.BorderSizePixel = 0
+    CommandsContainer.ScrollBarThickness = 6
+    CommandsContainer.Parent = AdminFrame
+    
+    local CommandsCorner = Instance.new("UICorner")
+    CommandsCorner.CornerRadius = UDim.new(0, 8)
+    CommandsCorner.Parent = CommandsContainer
+    
+    local CommandsList = Instance.new("UIListLayout")
+    CommandsList.Padding = UDim.new(0, 10)
+    CommandsList.SortOrder = Enum.SortOrder.LayoutOrder
+    CommandsList.Parent = CommandsContainer
+    
+    local CommandsPadding = Instance.new("UIPadding")
+    CommandsPadding.PaddingTop = UDim.new(0, 10)
+    CommandsPadding.PaddingLeft = UDim.new(0, 10)
+    CommandsPadding.PaddingRight = UDim.new(0, 10)
+    CommandsPadding.PaddingBottom = UDim.new(0, 10)
+    CommandsPadding.Parent = CommandsContainer
+    
+    -- Função para criar botão de comando
+    local function createCommandButton(name, action)
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(1, -20, 0, 40)
+        btn.BackgroundColor3 = Color3.fromRGB(85, 170, 255)
+        btn.Text = name
+        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        btn.Font = Enum.Font.GothamBold
+        btn.TextSize = 14
+        btn.Parent = CommandsContainer
+        
+        local btnCorner = Instance.new("UICorner")
+        btnCorner.CornerRadius = UDim.new(0, 6)
+        btnCorner.Parent = btn
+        
+        btn.MouseButton1Click:Connect(function()
+            pcall(action)
+        end)
+        
+        return btn
+    end
+    
+    -- Adicionar comandos básicos
+    createCommandButton("🎁 Dar Dinheiro (9999999)", function()
+        if v20 then
+            v20:FireServer("UpdateStats", {
+                Target = Player.Name,
+                Stat = "Money",
+                Amount = 9999999
+            })
+        end
+    end)
+    
+    createCommandButton("⭐ Max Rebirths", function()
+        if v20 then
+            v20:FireServer("UpdateStats", {
+                Target = Player.Name,
+                Stat = "Rebirths",
+                Amount = 999999
+            })
+        end
+    end)
+    
+    createCommandButton("⚡ Speed Boost", function()
+        if Player.Character and Player.Character:FindFirstChild("Humanoid") then
+            Player.Character.Humanoid.WalkSpeed = 100
+        end
+    end)
+    
+    createCommandButton("🚀 Jump Boost", function()
+        if Player.Character and Player.Character:FindFirstChild("Humanoid") then
+            Player.Character.Humanoid.JumpPower = 150
+        end
+    end)
+    
+    createCommandButton("👻 Invisível", function()
+        if v20 then
+            v20:FireServer("FunCommand", {
+                Target = Player.Name,
+                Command = "Invisible"
+            })
+        end
+    end)
+    
+    createCommandButton("👁️ Visível", function()
+        if v20 then
+            v20:FireServer("FunCommand", {
+                Target = Player.Name,
+                Command = "Visible"
+            })
+        end
+    end)
+    
+    createCommandButton("🎪 Girar Player", function()
+        if v20 then
+            v20:FireServer("FunCommand", {
+                Target = Player.Name,
+                Command = "Spin Player"
+            })
+        end
+    end)
+    
+    createCommandButton("❄️ Congelar", function()
+        if v20 then
+            v20:FireServer("FunCommand", {
+                Target = Player.Name,
+                Command = "Freeze Player"
+            })
+        end
+    end)
+    
+    createCommandButton("🔥 Descongelar", function()
+        if v20 then
+            v20:FireServer("FunCommand", {
+                Target = Player.Name,
+                Command = "UnFreeze Player"
+            })
+        end
+    end)
+    
+    -- Atualizar tamanho do canvas
+    CommandsContainer.CanvasSize = UDim2.new(0, 0, 0, CommandsList.AbsoluteContentSize.Y + 20)
+    CommandsList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        CommandsContainer.CanvasSize = UDim2.new(0, 0, 0, CommandsList.AbsoluteContentSize.Y + 20)
+    end)
+    
+    StatusLabel.Text = "✅ Status: Admin Panel Ativado!"
+    StatusLabel.TextColor3 = Color3.fromRGB(50, 255, 50)
+    StatusStroke.Color = Color3.fromRGB(50, 255, 50)
+    
+    print("🎄 Admin Panel ativado para: " .. Player.Name)
+end
+
+-- Função executar scripts CMD
+local function executeCommandScripts()
+    StatusLabel.Text = "📁 Status: Buscando scripts CMD..."
+    StatusLabel.TextColor3 = Color3.fromRGB(100, 150, 255)
+    StatusStroke.Color = Color3.fromRGB(100, 150, 255)
+    
+    local scriptsFound = 0
+    
+    -- Função recursiva para buscar scripts
+    local function searchAndExecute(parent)
+        for _, obj in pairs(parent:GetDescendants()) do
+            if (obj:IsA("LocalScript") or obj:IsA("Script") or obj:IsA("ModuleScript")) then
+                local parentName = obj.Parent.Name:lower()
+                if parentName == "cmd" or parentName == "command" or parentName == "commands" then
+                    pcall(function()
+                        if obj:IsA("ModuleScript") then
+                            local module = require(obj)
+                            if type(module) == "function" then
+                                module()
+                            end
+                        elseif obj.Source and obj.Source ~= "" then
+                            loadstring(obj.Source)()
+                        end
+                        scriptsFound = scriptsFound + 1
+                    end)
+                end
+            end
+        end
+    end
+    
+    -- Buscar em vários locais
+    pcall(function() searchAndExecute(ReplicatedStorage) end)
+    pcall(function() searchAndExecute(game:GetService("StarterGui")) end)
+    pcall(function() searchAndExecute(game:GetService("StarterPlayer")) end)
+    pcall(function() searchAndExecute(PlayerGui) end)
+    pcall(function() searchAndExecute(game:GetService("Workspace")) end)
+    
+    wait(0.5)
+    
+    if scriptsFound > 0 then
+        StatusLabel.Text = "✅ Status: " .. scriptsFound .. " script(s) CMD executado(s)!"
+        StatusLabel.TextColor3 = Color3.fromRGB(50, 255, 50)
+        StatusStroke.Color = Color3.fromRGB(50, 255, 50)
+    else
+        StatusLabel.Text = "⚠️ Status: Nenhum script CMD encontrado"
+        StatusLabel.TextColor3 = Color3.fromRGB(255, 150, 0)
+        StatusStroke.Color = Color3.fromRGB(255, 150, 0)
+    end
+    
+    print("📁 Scripts CMD executados: " .. scriptsFound)
+end
+
+-- Botão Ativar Admin
+ActivateBtn.MouseButton1Click:Connect(function()
+    if not adminActivated then
+        adminActivated = true
+        ActivateBtn.Active = false
+        
+        -- Animação de clique
+        TweenService:Create(ActivateBtn, TweenInfo.new(0.1), {
+            Size = UDim2.new(1, -5, 0, 60)
+        }):Play()
+        wait(0.1)
+        TweenService:Create(ActivateBtn, TweenInfo.new(0.1), {
+            Size = UDim2.new(1, 0, 0, 65)
+        }):Play()
+        
+        executeAdminPanel()
+        
+        wait(0.5)
+        
+        ActivateBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+        ActivateBtn.Text = "✅ ADMIN ATIVADO"
+        ActGradient.Color = ColorSequence.new(Color3.fromRGB(100, 100, 100))
+    end
+end)
+
+-- Botão Executar Scripts CMD
+CmdBtn.MouseButton1Click:Connect(function()
+    executeCommandScripts()
+end)
+
+print("🎄🎅 Sistema de Admin Natalino carregado com sucesso!")
