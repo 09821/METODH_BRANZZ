@@ -1,0 +1,996 @@
+-- Script: Spawn GUI System
+-- Autor: branzz
+-- Descrição: Sistema de spawn de modelos com interface arrastável
+
+-- Serviços
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+-- Player
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Tela de carregamento
+local LoadingScreen = Instance.new("ScreenGui")
+LoadingScreen.Name = "LoadingScreen"
+LoadingScreen.IgnoreGuiInset = true
+LoadingScreen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+LoadingScreen.Parent = PlayerGui
+
+-- Frame principal da tela de carregamento
+local LoadingFrame = Instance.new("Frame")
+LoadingFrame.Name = "LoadingFrame"
+LoadingFrame.Size = UDim2.new(1, 0, 1, 0)
+LoadingFrame.BackgroundColor3 = Color3.fromRGB(0, 10, 20)
+LoadingFrame.BorderSizePixel = 0
+LoadingFrame.Parent = LoadingScreen
+
+-- Container central
+local LoadingContainer = Instance.new("Frame")
+LoadingContainer.Name = "LoadingContainer"
+LoadingContainer.Size = UDim2.new(0.4, 0, 0.2, 0)
+LoadingContainer.Position = UDim2.new(0.3, 0, 0.4, 0)
+LoadingContainer.BackgroundColor3 = Color3.fromRGB(20, 30, 45)
+LoadingContainer.BorderSizePixel = 0
+LoadingContainer.Parent = LoadingFrame
+
+-- Cantos arredondados
+local Corner1 = Instance.new("UICorner")
+Corner1.CornerRadius = UDim.new(0, 12)
+Corner1.Parent = LoadingContainer
+
+-- Barra de progresso
+local ProgressBar = Instance.new("Frame")
+ProgressBar.Name = "ProgressBar"
+ProgressBar.Size = UDim2.new(0.9, 0, 0.1, 0)
+ProgressBar.Position = UDim2.new(0.05, 0, 0.7, 0)
+ProgressBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+ProgressBar.BorderSizePixel = 0
+ProgressBar.Parent = LoadingContainer
+
+local Corner2 = Instance.new("UICorner")
+Corner2.CornerRadius = UDim.new(0, 6)
+Corner2.Parent = ProgressBar
+
+-- Barra de progresso interna
+local ProgressFill = Instance.new("Frame")
+ProgressFill.Name = "ProgressFill"
+ProgressFill.Size = UDim2.new(0, 0, 1, 0)
+ProgressFill.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+ProgressFill.BorderSizePixel = 0
+ProgressFill.Parent = ProgressBar
+
+local Corner3 = Instance.new("UICorner")
+Corner3.CornerRadius = UDim.new(0, 6)
+Corner3.Parent = ProgressFill
+
+-- Texto de carregamento
+local LoadingText = Instance.new("TextLabel")
+LoadingText.Name = "LoadingText"
+LoadingText.Size = UDim2.new(1, 0, 0.3, 0)
+LoadingText.Position = UDim2.new(0, 0, 0.2, 0)
+LoadingText.BackgroundTransparency = 1
+LoadingText.Text = "Carregando Sistema..."
+LoadingText.TextColor3 = Color3.fromRGB(255, 255, 255)
+LoadingText.Font = Enum.Font.GothamSemibold
+LoadingText.TextSize = 20
+LoadingText.Parent = LoadingContainer
+
+-- Texto de porcentagem
+local PercentText = Instance.new("TextLabel")
+PercentText.Name = "PercentText"
+PercentText.Size = UDim2.new(1, 0, 0.2, 0)
+PercentText.Position = UDim2.new(0, 0, 0.8, 0)
+PercentText.BackgroundTransparency = 1
+PercentText.Text = "0%"
+PercentText.TextColor3 = Color3.fromRGB(200, 200, 200)
+PercentText.Font = Enum.Font.Gotham
+PercentText.TextSize = 16
+PercentText.Parent = LoadingContainer
+
+-- Efeito de brilho
+local UIGradient = Instance.new("UIGradient")
+UIGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 170, 255)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(100, 220, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 170, 255))
+})
+UIGradient.Rotation = 45
+UIGradient.Parent = ProgressFill
+
+-- GUI Principal
+local MainGUI = Instance.new("ScreenGui")
+MainGUI.Name = "SpawnCatsGUI"
+MainGUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+MainGUI.Enabled = false
+MainGUI.Parent = PlayerGui
+
+-- Frame principal (arrastável)
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 350, 0, 420)
+MainFrame.Position = UDim2.new(0.5, -175, 0.5, -210)
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 35, 45)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = MainGUI
+
+-- Cantos arredondados
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 10)
+MainCorner.Parent = MainFrame
+
+-- Sombra
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Color = Color3.fromRGB(60, 70, 85)
+UIStroke.Thickness = 2
+UIStroke.Parent = MainFrame
+
+-- Barra de título
+local TitleBar = Instance.new("Frame")
+TitleBar.Name = "TitleBar"
+TitleBar.Size = UDim2.new(1, 0, 0, 40)
+TitleBar.BackgroundColor3 = Color3.fromRGB(25, 30, 40)
+TitleBar.BorderSizePixel = 0
+TitleBar.Parent = MainFrame
+
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 10)
+TitleCorner.Parent = TitleBar
+
+-- Título
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Name = "TitleLabel"
+TitleLabel.Size = UDim2.new(0.7, 0, 1, 0)
+TitleLabel.Position = UDim2.new(0.05, 0, 0, 0)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Text = "Spawn gatos || by branzz"
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.TextSize = 16
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.Parent = TitleBar
+
+-- Botão minimizar
+local MinimizeButton = Instance.new("TextButton")
+MinimizeButton.Name = "MinimizeButton"
+MinimizeButton.Size = UDim2.new(0, 30, 0, 30)
+MinimizeButton.Position = UDim2.new(0.8, 0, 0.125, 0)
+MinimizeButton.BackgroundColor3 = Color3.fromRGB(60, 70, 85)
+MinimizeButton.Text = "_"
+MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeButton.Font = Enum.Font.GothamBold
+MinimizeButton.TextSize = 20
+MinimizeButton.Parent = TitleBar
+
+local MinimizeCorner = Instance.new("UICorner")
+MinimizeCorner.CornerRadius = UDim.new(0, 5)
+MinimizeCorner.Parent = MinimizeButton
+
+-- Botão fechar
+local CloseButton = Instance.new("TextButton")
+CloseButton.Name = "CloseButton"
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+CloseButton.Position = UDim2.new(0.9, 0, 0.125, 0)
+CloseButton.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.TextSize = 16
+CloseButton.Parent = TitleBar
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 5)
+CloseCorner.Parent = CloseButton
+
+-- Conteúdo principal
+local ContentFrame = Instance.new("Frame")
+ContentFrame.Name = "ContentFrame"
+ContentFrame.Size = UDim2.new(1, -20, 1, -60)
+ContentFrame.Position = UDim2.new(0, 10, 0, 50)
+ContentFrame.BackgroundTransparency = 1
+ContentFrame.Parent = MainFrame
+
+-- Selecionador de modelo
+local ModelSelector = Instance.new("Frame")
+ModelSelector.Name = "ModelSelector"
+ModelSelector.Size = UDim2.new(1, 0, 0, 50)
+ModelSelector.BackgroundColor3 = Color3.fromRGB(40, 45, 55)
+ModelSelector.BorderSizePixel = 0
+ModelSelector.Parent = ContentFrame
+
+local SelectorCorner = Instance.new("UICorner")
+SelectorCorner.CornerRadius = UDim.new(0, 8)
+SelectorCorner.Parent = ModelSelector
+
+-- Label do selecionador
+local SelectorLabel = Instance.new("TextLabel")
+SelectorLabel.Name = "SelectorLabel"
+SelectorLabel.Size = UDim2.new(0.7, 0, 1, 0)
+SelectorLabel.Position = UDim2.new(0.05, 0, 0, 0)
+SelectorLabel.BackgroundTransparency = 1
+SelectorLabel.Text = "Selecione um modelo:"
+SelectorLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+SelectorLabel.Font = Enum.Font.Gotham
+SelectorLabel.TextSize = 14
+SelectorLabel.TextXAlignment = Enum.TextXAlignment.Left
+SelectorLabel.Parent = ModelSelector
+
+-- Botão dropdown
+local DropdownButton = Instance.new("TextButton")
+DropdownButton.Name = "DropdownButton"
+DropdownButton.Size = UDim2.new(0, 30, 0, 30)
+DropdownButton.Position = UDim2.new(0.85, 0, 0.1, 0)
+DropdownButton.BackgroundColor3 = Color3.fromRGB(60, 70, 85)
+DropdownButton.Text = "▼"
+DropdownButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+DropdownButton.Font = Enum.Font.GothamBold
+DropdownButton.TextSize = 16
+DropdownButton.Parent = ModelSelector
+
+local DropdownCorner = Instance.new("UICorner")
+DropdownCorner.CornerRadius = UDim.new(0, 5)
+DropdownCorner.Parent = DropdownButton
+
+-- Nome selecionado
+local SelectedNameLabel = Instance.new("TextLabel")
+SelectedNameLabel.Name = "SelectedNameLabel"
+SelectedNameLabel.Size = UDim2.new(0.6, 0, 0.5, 0)
+SelectedNameLabel.Position = UDim2.new(0.05, 0, 0.5, 0)
+SelectedNameLabel.BackgroundTransparency = 1
+SelectedNameLabel.Text = "Nenhum selecionado"
+SelectedNameLabel.TextColor3 = Color3.fromRGB(170, 170, 170)
+SelectedNameLabel.Font = Enum.Font.Gotham
+SelectedNameLabel.TextSize = 12
+SelectedNameLabel.TextXAlignment = Enum.TextXAlignment.Left
+SelectedNameLabel.Parent = ModelSelector
+
+-- Raridade selecionada
+local SelectedRarityLabel = Instance.new("TextLabel")
+SelectedRarityLabel.Name = "SelectedRarityLabel"
+SelectedRarityLabel.Size = UDim2.new(0.3, 0, 0.5, 0)
+SelectedRarityLabel.Position = UDim2.new(0.65, 0, 0.5, 0)
+SelectedRarityLabel.BackgroundTransparency = 1
+SelectedRarityLabel.Text = ""
+SelectedRarityLabel.TextColor3 = Color3.fromRGB(170, 170, 170)
+SelectedRarityLabel.Font = Enum.Font.Gotham
+SelectedRarityLabel.TextSize = 12
+SelectedRarityLabel.TextXAlignment = Enum.TextXAlignment.Right
+SelectedRarityLabel.Parent = ModelSelector
+
+-- Dropdown frame (inicialmente escondido)
+local DropdownFrame = Instance.new("Frame")
+DropdownFrame.Name = "DropdownFrame"
+DropdownFrame.Size = UDim2.new(1, 0, 0, 200)
+DropdownFrame.Position = UDim2.new(0, 0, 1, 5)
+DropdownFrame.BackgroundColor3 = Color3.fromRGB(40, 45, 55)
+DropdownFrame.BorderSizePixel = 0
+DropdownFrame.Visible = false
+DropdownFrame.ZIndex = 10
+DropdownFrame.Parent = ModelSelector
+
+local DropdownFrameCorner = Instance.new("UICorner")
+DropdownFrameCorner.CornerRadius = UDim.new(0, 8)
+DropdownFrameCorner.Parent = DropdownFrame
+
+-- Barra de pesquisa
+local SearchBar = Instance.new("TextBox")
+SearchBar.Name = "SearchBar"
+SearchBar.Size = UDim2.new(1, -20, 0, 30)
+SearchBar.Position = UDim2.new(0, 10, 0, 10)
+SearchBar.BackgroundColor3 = Color3.fromRGB(50, 55, 65)
+SearchBar.TextColor3 = Color3.fromRGB(255, 255, 255)
+SearchBar.Font = Enum.Font.Gotham
+SearchBar.TextSize = 14
+SearchBar.PlaceholderText = "Pesquisar modelo..."
+SearchBar.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
+SearchBar.ClearTextOnFocus = false
+SearchBar.Parent = DropdownFrame
+
+local SearchBarCorner = Instance.new("UICorner")
+SearchBarCorner.CornerRadius = UDim.new(0, 5)
+SearchBarCorner.Parent = SearchBar
+
+-- Lista de modelos
+local ModelList = Instance.new("ScrollingFrame")
+ModelList.Name = "ModelList"
+ModelList.Size = UDim2.new(1, -20, 1, -50)
+ModelList.Position = UDim2.new(0, 10, 0, 50)
+ModelList.BackgroundTransparency = 1
+ModelList.ScrollBarThickness = 6
+ModelList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+ModelList.CanvasSize = UDim2.new(0, 0, 0, 0)
+ModelList.Parent = DropdownFrame
+
+local ListLayout = Instance.new("UIListLayout")
+ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ListLayout.Padding = UDim.new(0, 5)
+ListLayout.Parent = ModelList
+
+-- Informações do modelo selecionado
+local ModelInfoFrame = Instance.new("Frame")
+ModelInfoFrame.Name = "ModelInfoFrame"
+ModelInfoFrame.Size = UDim2.new(1, 0, 0, 100)
+ModelInfoFrame.Position = UDim2.new(0, 0, 0, 60)
+ModelInfoFrame.BackgroundColor3 = Color3.fromRGB(40, 45, 55)
+ModelInfoFrame.BorderSizePixel = 0
+ModelInfoFrame.Parent = ContentFrame
+
+local InfoCorner = Instance.new("UICorner")
+InfoCorner.CornerRadius = UDim.new(0, 8)
+InfoCorner.Parent = ModelInfoFrame
+
+-- Título das informações
+local InfoTitle = Instance.new("TextLabel")
+InfoTitle.Name = "InfoTitle"
+InfoTitle.Size = UDim2.new(1, 0, 0, 30)
+InfoTitle.Position = UDim2.new(0, 0, 0, 0)
+InfoTitle.BackgroundTransparency = 1
+InfoTitle.Text = "Informações do Modelo"
+InfoTitle.TextColor3 = Color3.fromRGB(220, 220, 220)
+InfoTitle.Font = Enum.Font.GothamSemibold
+InfoTitle.TextSize = 16
+InfoTitle.Parent = ModelInfoFrame
+
+-- Nome do modelo
+local ModelNameLabel = Instance.new("TextLabel")
+ModelNameLabel.Name = "ModelNameLabel"
+ModelNameLabel.Size = UDim2.new(1, -20, 0, 20)
+ModelNameLabel.Position = UDim2.new(0, 10, 0, 35)
+ModelNameLabel.BackgroundTransparency = 1
+ModelNameLabel.Text = "Nome: Nenhum"
+ModelNameLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+ModelNameLabel.Font = Enum.Font.Gotham
+ModelNameLabel.TextSize = 14
+ModelNameLabel.TextXAlignment = Enum.TextXAlignment.Left
+ModelNameLabel.Parent = ModelInfoFrame
+
+-- Raridade
+local RarityLabel = Instance.new("TextLabel")
+RarityLabel.Name = "RarityLabel"
+RarityLabel.Size = UDim2.new(1, -20, 0, 20)
+RarityLabel.Position = UDim2.new(0, 10, 0, 55)
+RarityLabel.BackgroundTransparency = 1
+RarityLabel.Text = "Raridade: Nenhuma"
+RarityLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+RarityLabel.Font = Enum.Font.Gotham
+RarityLabel.TextSize = 14
+RarityLabel.TextXAlignment = Enum.TextXAlignment.Left
+RarityLabel.Parent = ModelInfoFrame
+
+-- Caminho
+local PathLabel = Instance.new("TextLabel")
+PathLabel.Name = "PathLabel"
+PathLabel.Size = UDim2.new(1, -20, 0, 20)
+PathLabel.Position = UDim2.new(0, 10, 0, 75)
+PathLabel.BackgroundTransparency = 1
+PathLabel.Text = "Caminho: Nenhum"
+PathLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+PathLabel.Font = Enum.Font.Gotham
+PathLabel.TextSize = 12
+PathLabel.TextXAlignment = Enum.TextXAlignment.Left
+PathLabel.TextTruncate = Enum.TextTruncate.AtEnd
+PathLabel.Parent = ModelInfoFrame
+
+-- Botão spawn
+local SpawnButton = Instance.new("TextButton")
+SpawnButton.Name = "SpawnButton"
+SpawnButton.Size = UDim2.new(1, 0, 0, 50)
+SpawnButton.Position = UDim2.new(0, 0, 0, 170)
+SpawnButton.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
+SpawnButton.Text = "SPAWN"
+SpawnButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpawnButton.Font = Enum.Font.GothamBold
+SpawnButton.TextSize = 18
+SpawnButton.Parent = ContentFrame
+
+local SpawnCorner = Instance.new("UICorner")
+SpawnCorner.CornerRadius = UDim.new(0, 8)
+SpawnCorner.Parent = SpawnButton
+
+-- Efeito de hover no botão spawn
+local SpawnGradient = Instance.new("UIGradient")
+SpawnGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 120, 215)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 150, 255))
+})
+SpawnGradient.Rotation = 90
+SpawnGradient.Parent = SpawnButton
+
+-- Status do spawn
+local StatusLabel = Instance.new("TextLabel")
+StatusLabel.Name = "StatusLabel"
+StatusLabel.Size = UDim2.new(1, 0, 0, 30)
+StatusLabel.Position = UDim2.new(0, 0, 0, 230)
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Text = "Pronto para spawn"
+StatusLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+StatusLabel.Font = Enum.Font.Gotham
+StatusLabel.TextSize = 14
+StatusLabel.Parent = ContentFrame
+
+-- Instâncias para os itens da lista
+local function CreateListItem(modelName, rarity, path)
+    local item = Instance.new("TextButton")
+    item.Name = "Item_" .. modelName
+    item.Size = UDim2.new(1, -10, 0, 35)
+    item.BackgroundColor3 = Color3.fromRGB(50, 55, 65)
+    item.Text = ""
+    item.AutoButtonColor = false
+    item.Parent = ModelList
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 5)
+    corner.Parent = item
+    
+    -- Nome
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Name = "NameLabel"
+    nameLabel.Size = UDim2.new(0.7, 0, 1, 0)
+    nameLabel.Position = UDim2.new(0, 10, 0, 0)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.Text = modelName
+    nameLabel.TextColor3 = Color3.fromRGB(240, 240, 240)
+    nameLabel.Font = Enum.Font.Gotham
+    nameLabel.TextSize = 14
+    nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+    nameLabel.Parent = item
+    
+    -- Raridade
+    local rarityLabel = Instance.new("TextLabel")
+    rarityLabel.Name = "RarityLabel"
+    rarityLabel.Size = UDim2.new(0.25, 0, 1, 0)
+    rarityLabel.Position = UDim2.new(0.75, 0, 0, 0)
+    rarityLabel.BackgroundTransparency = 1
+    rarityLabel.Text = rarity
+    rarityLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+    rarityLabel.Font = Enum.Font.Gotham
+    rarityLabel.TextSize = 12
+    rarityLabel.TextXAlignment = Enum.TextXAlignment.Right
+    rarityLabel.Parent = item
+    
+    -- Cor baseada na raridade
+    local rarityColors = {
+        ["Comum"] = Color3.fromRGB(150, 150, 150),
+        ["Incomum"] = Color3.fromRGB(100, 200, 100),
+        ["Raro"] = Color3.fromRGB(100, 150, 255),
+        ["Épico"] = Color3.fromRGB(180, 100, 255),
+        ["Lendário"] = Color3.fromRGB(255, 180, 50),
+        ["Mítico"] = Color3.fromRGB(255, 100, 100)
+    }
+    
+    if rarityColors[rarity] then
+        rarityLabel.TextColor3 = rarityColors[rarity]
+    end
+    
+    -- Efeitos de hover
+    item.MouseEnter:Connect(function()
+        TweenService:Create(item, TweenInfo.new(0.2), {
+            BackgroundColor3 = Color3.fromRGB(60, 65, 75)
+        }):Play()
+    end)
+    
+    item.MouseLeave:Connect(function()
+        TweenService:Create(item, TweenInfo.new(0.2), {
+            BackgroundColor3 = Color3.fromRGB(50, 55, 65)
+        }):Play()
+    end)
+    
+    -- Clique
+    item.MouseButton1Click:Connect(function()
+        SelectedNameLabel.Text = modelName
+        SelectedRarityLabel.Text = rarity
+        ModelNameLabel.Text = "Nome: " .. modelName
+        RarityLabel.Text = "Raridade: " .. rarity
+        PathLabel.Text = "Caminho: " .. path
+        
+        -- Fechar dropdown
+        DropdownFrame.Visible = false
+        DropdownButton.Text = "▼"
+        
+        -- Atualizar status
+        StatusLabel.Text = "Modelo selecionado: " .. modelName
+        StatusLabel.TextColor3 = Color3.fromRGB(100, 200, 100)
+        
+        _G.SelectedModel = {
+            Name = modelName,
+            Rarity = rarity,
+            Path = path
+        }
+    end)
+    
+    return item
+end
+
+-- Função para procurar modelos
+local function FindModels()
+    local models = {}
+    local possibleFolders = {
+        "Things",
+        "ThingsModels",
+        "Things Models",
+        "ThingsModules",
+        "Things Modules"
+    }
+    
+    -- Procurar por pastas de raridade
+    local function FindRarityFolders(parent)
+        local rarityFolders = {}
+        for _, child in pairs(parent:GetChildren()) do
+            if child:IsA("Folder") then
+                local name = child.Name:lower()
+                if name:find("rarity") or name:find("raridade") then
+                    table.insert(rarityFolders, child)
+                end
+                -- Verificar subpastas recursivamente
+                local subRarities = FindRarityFolders(child)
+                for _, sub in pairs(subRarities) do
+                    table.insert(rarityFolders, sub)
+                end
+            end
+        end
+        return rarityFolders
+    end
+    
+    -- Procurar modelos em uma pasta
+    local function FindModelsInFolder(folder, rarity)
+        for _, item in pairs(folder:GetChildren()) do
+            if item:IsA("Model") or item:IsA("MeshPart") or item:IsA("Part") then
+                table.insert(models, {
+                    Name = item.Name,
+                    Rarity = rarity or "Desconhecida",
+                    Path = folder:GetFullName()
+                })
+            elseif item:IsA("Folder") then
+                -- Procurar recursivamente
+                FindModelsInFolder(item, rarity)
+            end
+        end
+    end
+    
+    -- Procurar em ReplicatedStorage
+    for _, folderName in pairs(possibleFolders) do
+        local folder = ReplicatedStorage:FindFirstChild(folderName)
+        if folder then
+            -- Primeiro, procurar por pastas de raridade
+            local rarityFolders = FindRarityFolders(folder)
+            
+            if #rarityFolders > 0 then
+                -- Tem pastas de raridade
+                for _, rarityFolder in pairs(rarityFolders) do
+                    local rarityName = rarityFolder.Name
+                    FindModelsInFolder(rarityFolder, rarityName)
+                end
+            else
+                -- Não tem pastas de raridade, procurar diretamente
+                FindModelsInFolder(folder, "Comum")
+            end
+        end
+    end
+    
+    -- Procurar também em outras pastas comuns
+    local otherFolders = {"Models", "Items", "Pets", "Cats"}
+    for _, folderName in pairs(otherFolders) do
+        local folder = ReplicatedStorage:FindFirstChild(folderName)
+        if folder then
+            FindModelsInFolder(folder, "Comum")
+        end
+    end
+    
+    -- Ordenar alfabeticamente
+    table.sort(models, function(a, b)
+        return a.Name:lower() < b.Name:lower()
+    end)
+    
+    return models
+end
+
+-- Função para encontrar o RemoteEvent correto
+local function FindSpawnRemote()
+    local possibleNames = {
+        "SpawnItem",
+        "SpawnThing",
+        "SpawnModel",
+        "SpawnPet",
+        "SpawnCat",
+        "AdminAction",
+        "RequestSpawn",
+        "RemoteEvent"
+    }
+    
+    -- Procurar em ReplicatedStorage
+    for _, name in pairs(possibleNames) do
+        local remote = ReplicatedStorage:FindFirstChild(name)
+        if remote and remote:IsA("RemoteEvent") then
+            return remote
+        end
+        
+        -- Procurar em pastas
+        local remotesFolder = ReplicatedStorage:FindFirstChild("Remotes")
+        if remotesFolder then
+            remote = remotesFolder:FindFirstChild(name)
+            if remote and remote:IsA("RemoteEvent") then
+                return remote
+            end
+            
+            local eventsFolder = remotesFolder:FindFirstChild("Events")
+            if eventsFolder then
+                remote = eventsFolder:FindFirstChild(name)
+                if remote and remote:IsA("RemoteEvent") then
+                    return remote
+                end
+            end
+        end
+    end
+    
+    -- Procurar em outras pastas comuns
+    local commonFolders = {"Events", "RemoteEvents", "Network"}
+    for _, folderName in pairs(commonFolders) do
+        local folder = ReplicatedStorage:FindFirstChild(folderName)
+        if folder then
+            for _, remote in pairs(folder:GetChildren()) do
+                if remote:IsA("RemoteEvent") and remote.Name:find("Spawn") then
+                    return remote
+                end
+            end
+        end
+    end
+    
+    return nil
+end
+
+-- Função para encontrar waypoints
+local function FindWaypoint()
+    local workspace = game:GetService("Workspace")
+    
+    -- Procurar por pasta Waypoints
+    local waypointsFolder = workspace:FindFirstChild("Waypoints")
+    if waypointsFolder then
+        local waypoint1 = waypointsFolder:FindFirstChild("Waypoint 1")
+        if waypoint1 then
+            return waypoint1
+        end
+        
+        -- Pegar o primeiro waypoint
+        for _, waypoint in pairs(waypointsFolder:GetChildren()) do
+            if waypoint:IsA("Part") then
+                return waypoint
+            end
+        end
+    end
+    
+    -- Procurar por qualquer part chamada "Waypoint"
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("Part") and obj.Name:find("Waypoint") then
+            return obj
+        end
+    end
+    
+    -- Criar um waypoint padrão se não encontrar
+    local defaultWaypoint = Instance.new("Part")
+    defaultWaypoint.Name = "DefaultSpawnPoint"
+    defaultWaypoint.Size = Vector3.new(2, 1, 2)
+    defaultWaypoint.Position = Vector3.new(0, 5, 0)
+    defaultWaypoint.Anchored = true
+    defaultWaypoint.CanCollide = false
+    defaultWaypoint.Transparency = 1
+    defaultWaypoint.Parent = workspace
+    
+    return defaultWaypoint
+end
+
+-- Animação da tela de carregamento
+local function AnimateLoadingScreen()
+    local duration = 3 -- 3 segundos
+    local startTime = tick()
+    local endTime = startTime + duration
+    
+    while tick() < endTime do
+        local elapsed = tick() - startTime
+        local progress = elapsed / duration
+        
+        -- Atualizar barra de progresso
+        TweenService:Create(ProgressFill, TweenInfo.new(0.1), {
+            Size = UDim2.new(progress, 0, 1, 0)
+        }):Play()
+        
+        -- Atualizar texto
+        local percent = math.floor(progress * 100)
+        PercentText.Text = percent .. "%"
+        
+        -- Textos diferentes em diferentes progressos
+        if progress < 0.3 then
+            LoadingText.Text = "Carregando Sistema..."
+        elseif progress < 0.6 then
+            LoadingText.Text = "Procurando Modelos..."
+        elseif progress < 0.9 then
+            LoadingText.Text = "Preparando Interface..."
+        else
+            LoadingText.Text = "Quase pronto..."
+        end
+        
+        RunService.RenderStepped:Wait()
+    end
+    
+    -- Completar barra
+    TweenService:Create(ProgressFill, TweenInfo.new(0.3), {
+        Size = UDim2.new(1, 0, 1, 0)
+    }):Play()
+    
+    PercentText.Text = "100%"
+    LoadingText.Text = "Carregamento completo!"
+    
+    wait(0.5)
+    
+    -- Fade out da tela de carregamento
+    TweenService:Create(LoadingFrame, TweenInfo.new(0.5), {
+        BackgroundTransparency = 1
+    }):Play()
+    
+    TweenService:Create(LoadingContainer, TweenInfo.new(0.5), {
+        BackgroundTransparency = 1
+    }):Play()
+    
+    TweenService:Create(LoadingText, TweenInfo.new(0.5), {
+        TextTransparency = 1
+    }):Play()
+    
+    TweenService:Create(PercentText, TweenInfo.new(0.5), {
+        TextTransparency = 1
+    }):Play()
+    
+    TweenService:Create(ProgressBar, TweenInfo.new(0.5), {
+        BackgroundTransparency = 1
+    }):Play()
+    
+    TweenService:Create(ProgressFill, TweenInfo.new(0.5), {
+        BackgroundTransparency = 1
+    }):Play()
+    
+    wait(0.5)
+    
+    -- Remover tela de carregamento e mostrar GUI principal
+    LoadingScreen:Destroy()
+    MainGUI.Enabled = true
+    
+    -- Carregar modelos
+    StatusLabel.Text = "Carregando modelos..."
+    local models = FindModels()
+    
+    -- Preencher lista
+    for _, model in pairs(models) do
+        CreateListItem(model.Name, model.Rarity, model.Path)
+    end
+    
+    if #models > 0 then
+        StatusLabel.Text = "Carregados " .. #models .. " modelos"
+        StatusLabel.TextColor3 = Color3.fromRGB(100, 200, 100)
+    else
+        StatusLabel.Text = "Nenhum modelo encontrado"
+        StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+    end
+end
+
+-- Eventos dos botões
+DropdownButton.MouseButton1Click:Connect(function()
+    DropdownFrame.Visible = not DropdownFrame.Visible
+    if DropdownFrame.Visible then
+        DropdownButton.Text = "▲"
+        
+        -- Filtrar lista se houver pesquisa
+        local searchText = SearchBar.Text:lower()
+        if searchText == "" then
+            -- Mostrar todos
+            for _, item in pairs(ModelList:GetChildren()) do
+                if item:IsA("TextButton") then
+                    item.Visible = true
+                end
+            end
+        end
+    else
+        DropdownButton.Text = "▼"
+    end
+end)
+
+-- Função de pesquisa
+local function UpdateSearch()
+    local searchText = SearchBar.Text:lower()
+    
+    for _, item in pairs(ModelList:GetChildren()) do
+        if item:IsA("TextButton") then
+            local nameLabel = item:FindFirstChild("NameLabel")
+            if nameLabel then
+                local itemName = nameLabel.Text:lower()
+                if searchText == "" or itemName:find(searchText) then
+                    item.Visible = true
+                else
+                    item.Visible = false
+                end
+            end
+        end
+    end
+end
+
+SearchBar:GetPropertyChangedSignal("Text"):Connect(UpdateSearch)
+
+-- Botão minimizar
+local isMinimized = false
+local originalSize = MainFrame.Size
+MinimizeButton.MouseButton1Click:Connect(function()
+    if not isMinimized then
+        -- Minimizar
+        TweenService:Create(MainFrame, TweenInfo.new(0.3), {
+            Size = UDim2.new(0, 350, 0, 40)
+        }):Play()
+        TweenService:Create(ContentFrame, TweenInfo.new(0.3), {
+            Size = UDim2.new(1, -20, 1, -60)
+        }):Play()
+        ContentFrame.Visible = false
+        isMinimized = true
+        MinimizeButton.Text = "□"
+    else
+        -- Restaurar
+        TweenService:Create(MainFrame, TweenInfo.new(0.3), {
+            Size = originalSize
+        }):Play()
+        wait(0.3)
+        ContentFrame.Visible = true
+        isMinimized = false
+        MinimizeButton.Text = "_"
+    end
+end)
+
+-- Botão fechar
+CloseButton.MouseButton1Click:Connect(function()
+    TweenService:Create(MainFrame, TweenInfo.new(0.3), {
+        Size = UDim2.new(0, 350, 0, 0),
+        Position = UDim2.new(0.5, -175, 0.5, 0)
+    }):Play()
+    
+    TweenService:Create(MainFrame, TweenInfo.new(0.3), {
+        BackgroundTransparency = 1
+    }):Play()
+    
+    wait(0.3)
+    MainGUI:Destroy()
+end)
+
+-- Botão spawn
+SpawnButton.MouseButton1Click:Connect(function()
+    if not _G.SelectedModel then
+        StatusLabel.Text = "Selecione um modelo primeiro!"
+        StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+        
+        -- Efeito de erro
+        local originalColor = SpawnButton.BackgroundColor3
+        TweenService:Create(SpawnButton, TweenInfo.new(0.1), {
+            BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        }):Play()
+        wait(0.1)
+        TweenService:Create(SpawnButton, TweenInfo.new(0.1), {
+            BackgroundColor3 = originalColor
+        }):Play()
+        
+        return
+    end
+    
+    StatusLabel.Text = "Spawnando " .. _G.SelectedModel.Name .. "..."
+    StatusLabel.TextColor3 = Color3.fromRGB(255, 200, 100)
+    
+    -- Efeito visual no botão
+    TweenService:Create(SpawnButton, TweenInfo.new(0.2), {
+        BackgroundColor3 = Color3.fromRGB(0, 180, 255)
+    }):Play()
+    
+    -- Encontrar RemoteEvent
+    local spawnRemote = FindSpawnRemote()
+    
+    if spawnRemote then
+        -- Encontrar waypoint
+        local waypoint = FindWaypoint()
+        
+        -- Tentar spawnar
+        local success, errorMsg = pcall(function()
+            spawnRemote:FireServer(_G.SelectedModel.Name, waypoint.Position)
+        end)
+        
+        if success then
+            StatusLabel.Text = _G.SelectedModel.Name .. " spawnado com sucesso!"
+            StatusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
+        else
+            StatusLabel.Text = "Erro ao spawnar: " .. errorMsg
+            StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+        end
+    else
+        -- Tentar métodos alternativos
+        StatusLabel.Text = "Tentando spawn por métodos alternativos..."
+        
+        -- Método 1: Procurar script de spawn
+        local spawnScripts = {
+            "SpawnSystem",
+            "ItemSpawner",
+            "PetSpawner",
+            "AdminSystem"
+        }
+        
+        local spawned = false
+        
+        for _, scriptName in pairs(spawnScripts) do
+            local script = ReplicatedStorage:FindFirstChild(scriptName)
+            if script then
+                -- Tentar usar o script
+                StatusLabel.Text = "Usando " .. scriptName .. "..."
+                -- Aqui você poderia adicionar lógica específica para cada script
+            end
+        end
+        
+        if not spawned then
+            StatusLabel.Text = "Nenhum sistema de spawn encontrado"
+            StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+        end
+    end
+    
+    -- Resetar cor do botão
+    wait(0.5)
+    TweenService:Create(SpawnButton, TweenInfo.new(0.2), {
+        BackgroundColor3 = Color3.fromRGB(0, 120, 215)
+    }):Play()
+end)
+
+-- Efeitos de hover nos botões
+MinimizeButton.MouseEnter:Connect(function()
+    TweenService:Create(MinimizeButton, TweenInfo.new(0.2), {
+        BackgroundColor3 = Color3.fromRGB(80, 90, 105)
+    }):Play()
+end)
+
+MinimizeButton.MouseLeave:Connect(function()
+    TweenService:Create(MinimizeButton, TweenInfo.new(0.2), {
+        BackgroundColor3 = Color3.fromRGB(60, 70, 85)
+    }):Play()
+end)
+
+CloseButton.MouseEnter:Connect(function()
+    TweenService:Create(CloseButton, TweenInfo.new(0.2), {
+        BackgroundColor3 = Color3.fromRGB(220, 80, 80)
+    }):Play()
+end)
+
+CloseButton.MouseLeave:Connect(function()
+    TweenService:Create(CloseButton, TweenInfo.new(0.2), {
+        BackgroundColor3 = Color3.fromRGB(200, 60, 60)
+    }):Play()
+end)
+
+DropdownButton.MouseEnter:Connect(function()
+    TweenService:Create(DropdownButton, TweenInfo.new(0.2), {
+        BackgroundColor3 = Color3.fromRGB(80, 90, 105)
+    }):Play()
+end)
+
+DropdownButton.MouseLeave:Connect(function()
+    TweenService:Create(DropdownButton, TweenInfo.new(0.2), {
+        BackgroundColor3 = Color3.fromRGB(60, 70, 85)
+    }):Play()
+end)
+
+SpawnButton.MouseEnter:Connect(function()
+    TweenService:Create(SpawnButton, TweenInfo.new(0.2), {
+        BackgroundColor3 = Color3.fromRGB(0, 140, 235)
+    }):Play()
+end)
+
+SpawnButton.MouseLeave:Connect(function()
+    TweenService:Create(SpawnButton, TweenInfo.new(0.2), {
+        BackgroundColor3 = Color3.fromRGB(0, 120, 215)
+    }):Play()
+end)
+
+-- Iniciar tela de carregamento
+coroutine.wrap(AnimateLoadingScreen)()
+
+print("Spawn Cats GUI carregado com sucesso!")
+print("Sistema por: branzz")
