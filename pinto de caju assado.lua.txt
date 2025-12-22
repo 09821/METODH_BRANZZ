@@ -1,0 +1,1263 @@
+-- Script Path: game:GetService("StarterGui").AdminPanelGUI.AdminGUIHandler
+-- Took 0.45s to decompile.
+-- Executor: PunkX (Android)
+-- MODIFICADO: Nome personalizado adicionado - botzinYT12
+
+local v1 = game:GetService("Players")
+local v2 = game:GetService("ReplicatedStorage")
+local v_u_3 = game:GetService("TweenService")
+game:GetService("UserInputService")
+local v4 = game:GetService("SoundService")
+local v_u_5 = game:GetService("MarketplaceService")
+local v6 = require(v2:WaitForChild("Configuration"):WaitForChild("Modules"):WaitForChild("Mutations"))
+if not v6 then
+    warn("your mutations module is missing or isnt working - Admin Panel")
+end
+local v7 = require(v2:WaitForChild("Traits", 3))
+if not v7 then
+    warn("your Traits module is missing or isnt working - Admin Panel -- YOUR REAL TRAITS MODULE IS NOT IN REPLICATED TRY CHECKING IT IN SERVERSTORAGE")
+end
+local v8 = require(v2:WaitForChild("Configuration"):WaitForChild("Modules"):WaitForChild("Events"))
+if not v8 then
+    warn("your Events module is missing or isnt working - Admin Panel")
+end
+local v9 = require(v2:WaitForChild("Configuration"):WaitForChild("Modules"):WaitForChild("Things"))
+if not v9 then
+    warn("your Things module is missing or isnt working - Admin Panel")
+end
+local v10 = require(v2:WaitForChild("Modules"):WaitForChild("Animations"))
+local v_u_11 = v4:WaitForChild("Sounds"):WaitForChild("UiClick") or v4:WaitForChild("UiClick")
+local v_u_12 = v4:WaitForChild("Sounds"):WaitForChild("UiError") or v4:WaitForChild("UiError")
+if v_u_11 then
+    v_u_12 = v_u_12
+end
+local v_u_13 = false
+local v_u_14 = v1.LocalPlayer
+local v_u_15 = script.Parent
+local v_u_16 = v_u_15:WaitForChild("AdminFrame")
+local v_u_17 = v_u_15:WaitForChild("TabBar")
+local v18 = v_u_17:WaitForChild("Tabs")
+local v_u_19 = v_u_15:WaitForChild("OpenPanel")
+local v_u_20 = v2:WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("AdminAction") or (v2:WaitForChild("AdminAction") or v2:WaitForChild("Remotes"):WaitForChild("AdminAction"))
+local v21 = v2:WaitForChild("Events")
+local v22 = v21:WaitForChild("GlobalMessageEvent")
+v21:WaitForChild("RequestGlobalAnnouncement")
+local v_u_23 = false
+local v_u_24 = 0
+local v_u_25 = false
+v_u_16.Visible = false
+v_u_17.Visible = false
+v_u_19.Visible = false
+v10:AnimateButton(v_u_19)
+
+-- MODIFICAÇÃO: Adicionar nome personalizado na interface
+local function AddCustomNameToUI()
+    -- Adicionar nome na frame principal
+    local customNameLabel = Instance.new("TextLabel")
+    customNameLabel.Name = "CustomAdminName"
+    customNameLabel.Text = "👑 botzinYT12 👑"
+    customNameLabel.Size = UDim2.new(0, 200, 0, 30)
+    customNameLabel.Position = UDim2.new(0.5, -100, 0, 10)
+    customNameLabel.BackgroundTransparency = 1
+    customNameLabel.TextColor3 = Color3.fromRGB(255, 215, 0) -- Cor dourada
+    customNameLabel.Font = Enum.Font.FredokaOne
+    customNameLabel.TextSize = 18
+    customNameLabel.TextStrokeTransparency = 0
+    customNameLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    customNameLabel.ZIndex = 100
+    customNameLabel.Parent = v_u_16
+    
+    -- Efeito de brilho sutil
+    local glow = Instance.new("UIStroke")
+    glow.Name = "NameGlow"
+    glow.Color = Color3.fromRGB(255, 255, 100)
+    glow.Thickness = 2
+    glow.Transparency = 0.7
+    glow.Parent = customNameLabel
+    
+    -- Adicionar também no título de cada aba
+    for tabName, tabFrame in pairs(v_u_26) do
+        if tabFrame and tabFrame:FindFirstChild("Title") then
+            local title = tabFrame:FindFirstChild("Title")
+            if title then
+                title.Text = "Admin Panel - botzinYT12"
+            end
+        end
+    end
+end
+
+local v_u_26 = {
+    ["MainTab"] = v_u_16:WaitForChild("MainTabContent"),
+    ["FunTab"] = v_u_16:WaitForChild("FunTabContent"),
+    ["StatsTab"] = v_u_16:WaitForChild("StatsTabContent"),
+    ["ModTab"] = v_u_16:WaitForChild("ModTabContent"),
+    ["MorphTab"] = v_u_16:WaitForChild("MorphTabContent"),
+    ["BaseTab"] = v_u_16:WaitForChild("BaseTabContent")
+}
+local v_u_27 = {
+    ["MainTab"] = v18:WaitForChild("MainTab"),
+    ["FunTab"] = v18:WaitForChild("FunTab"),
+    ["StatsTab"] = v18:WaitForChild("StatsTab"),
+    ["ModTab"] = v18:WaitForChild("ModTab"),
+    ["MorphTab"] = v18:WaitForChild("MorphTab"),
+    ["BaseTab"] = v18:WaitForChild("BaseTab")
+}
+local v28 = {
+    "Random",
+    "Fling Player",
+    "Freeze Player",
+    "UnFreeze Player",
+    "Make Giant",
+    "Make Tiny",
+    "Make Normal",
+    "Teleport to Player",
+    "Spin Player",
+    "Spin Player FAST",
+    "Speed Boost",
+    "Slow Boost",
+    "Jump Boost",
+    "Invisible",
+    "Visible",
+    "Jumpscare"
+}
+local v29 = { "Money", "Steals", "Rebirths" }
+local v_u_30 = {
+    ["Main"] = 3,
+    ["Fun"] = 3,
+    ["Mod"] = 5,
+    ["Morph"] = 3,
+    ["Base"] = 1,
+    ["Stats"] = 1
+}
+local v_u_31 = {
+    ["Background"] = Color3.fromRGB(85, 170, 255),
+    ["Primary"] = Color3.fromRGB(255, 255, 255),
+    ["Secondary"] = Color3.fromRGB(61, 121, 182),
+    ["Success"] = Color3.fromRGB(85, 255, 127),
+    ["Danger"] = Color3.fromRGB(239, 68, 68),
+    ["Text"] = Color3.fromRGB(255, 255, 255),
+    ["TextStroke"] = Color3.fromRGB(57, 114, 171),
+    ["TextSecondary"] = Color3.fromRGB(227, 238, 255)
+}
+local v_u_32 = {
+    ["Tab"] = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+    ["Dropdown"] = TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+    ["Button"] = TweenInfo.new(0.15, Enum.EasingStyle.Linear)
+}
+local v_u_33 = "MainTab"
+local v_u_34 = {}
+local function v53(p_u_35, p_u_36, p_u_37)
+    -- upvalues: (copy) v_u_31, (copy) v_u_3, (copy) v_u_32, (copy) v_u_11, (copy) v_u_34
+    if p_u_35 then
+        local v_u_38 = {
+            ["button"] = p_u_35,
+            ["frame"] = nil,
+            ["isOpen"] = false,
+            ["options"] = p_u_36 or {}
+        }
+        local v39 = p_u_35:FindFirstChild("Options")
+        if v39 then
+            v39:Destroy()
+        end
+        local v_u_40 = Instance.new("ScrollingFrame")
+        v_u_40.Name = "Options"
+        v_u_40.Size = UDim2.new(1, 0, 0, 0)
+        v_u_40.Position = UDim2.new(0, 0, 1, 4)
+        v_u_40.BackgroundColor3 = v_u_31.Background
+        v_u_40.BorderSizePixel = 1
+        v_u_40.BorderColor3 = v_u_31.Primary
+        v_u_40.ClipsDescendants = true
+        v_u_40.Visible = false
+        v_u_40.ZIndex = 1000
+        v_u_40.CanvasSize = UDim2.new(0, 0, 0, 0)
+        v_u_40.ScrollBarThickness = 6
+        v_u_40.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        v_u_40.Parent = p_u_35
+        local v41 = Instance.new("UICorner")
+        v41.CornerRadius = UDim.new(0, 4)
+        v41.Parent = v_u_40
+        v_u_38.frame = v_u_40
+        local v42 = Instance.new("UIListLayout")
+        v42.SortOrder = Enum.SortOrder.LayoutOrder
+        v42.Padding = UDim.new(0, 5)
+        v42.Parent = v_u_40
+        local v43 = Instance.new("UIPadding")
+        v43.PaddingTop = UDim.new(0, 5)
+        v43.PaddingLeft = UDim.new(0, 5)
+        v43.PaddingRight = UDim.new(0, 5)
+        v43.PaddingBottom = UDim.new(0, 5)
+        v43.Parent = v_u_40
+        for v44, v_u_45 in ipairs(p_u_36) do
+            local v_u_46 = Instance.new("TextButton")
+            v_u_46.Name = "Option" .. v44
+            v_u_46.Text = v_u_45
+            v_u_46.Size = UDim2.new(1, -10, 0, 30)
+            v_u_46.BackgroundColor3 = v_u_31.Secondary
+            v_u_46.TextColor3 = v_u_31.Text
+            v_u_46.Font = Enum.Font.FredokaOne
+            v_u_46.TextSize = 14
+            v_u_46.BorderSizePixel = 0
+            v_u_46.ZIndex = 1001
+            v_u_46.Parent = v_u_40
+            local v47 = Instance.new("UICorner")
+            v47.CornerRadius = UDim.new(0, 3)
+            v47.Parent = v_u_46
+            local v48 = Instance.new("UIStroke")
+            v48.Color = v_u_31.TextStroke
+            v48.Thickness = 2
+            v48.Parent = v_u_46
+            v_u_46.MouseEnter:Connect(function()
+                -- upvalues: (ref) v_u_3, (copy) v_u_46, (ref) v_u_32, (ref) v_u_31
+                v_u_3:Create(v_u_46, v_u_32.Button, {
+                    ["BackgroundColor3"] = v_u_31.Primary
+                }):Play()
+            end)
+            v_u_46.MouseLeave:Connect(function()
+                -- upvalues: (ref) v_u_3, (copy) v_u_46, (ref) v_u_32, (ref) v_u_31
+                v_u_3:Create(v_u_46, v_u_32.Button, {
+                    ["BackgroundColor3"] = v_u_31.Secondary
+                }):Play()
+            end)
+            v_u_46.MouseButton1Click:Connect(function()
+                -- upvalues: (ref) v_u_11, (copy) p_u_35, (copy) v_u_45, (copy) v_u_38, (ref) v_u_3, (copy) v_u_40, (ref) v_u_32, (copy) p_u_37
+                v_u_11:Play()
+                p_u_35.Text = v_u_45
+                v_u_38.isOpen = false
+                v_u_3:Create(v_u_40, v_u_32.Dropdown, {
+                    ["Size"] = UDim2.new(1, 0, 0, 0)
+                }):Play()
+                task.delay(v_u_32.Dropdown.Time, function()
+                    -- upvalues: (ref) v_u_40
+                    v_u_40.Visible = false
+                end)
+                if p_u_37 then
+                    p_u_37(v_u_45)
+                end
+            end)
+        end
+        p_u_35.MouseButton1Click:Connect(function()
+            -- upvalues: (ref) v_u_11, (ref) v_u_34, (copy) v_u_38, (ref) v_u_3, (ref) v_u_32, (copy) v_u_40, (copy) p_u_36
+            v_u_11:Play()
+            for _, v_u_49 in pairs(v_u_34) do
+                if v_u_49 ~= v_u_38 and v_u_49.isOpen then
+                    v_u_49.isOpen = false
+                    v_u_3:Create(v_u_49.frame, v_u_32.Dropdown, {
+                        ["Size"] = UDim2.new(1, 0, 0, 0)
+                    }):Play()
+                    task.delay(v_u_32.Dropdown.Time, function()
+                        -- upvalues: (copy) v_u_49
+                        v_u_49.frame.Visible = false
+                    end)
+                end
+            end
+            v_u_38.isOpen = not v_u_38.isOpen
+            if v_u_38.isOpen then
+                v_u_40.Visible = true
+                local v50 = #p_u_36 * 35 + 10
+                local v51 = math.min(150, v50)
+                v_u_3:Create(v_u_40, v_u_32.Dropdown, {
+                    ["Size"] = UDim2.new(1, 0, 0, v51)
+                }):Play()
+            else
+                v_u_3:Create(v_u_40, v_u_32.Dropdown, {
+                    ["Size"] = UDim2.new(1, 0, 0, 0)
+                }):Play()
+                task.delay(v_u_32.Dropdown.Time, function()
+                    -- upvalues: (ref) v_u_38, (ref) v_u_40
+                    if not v_u_38.isOpen then
+                        v_u_40.Visible = false
+                    end
+                end)
+            end
+        end)
+        local v52 = v_u_34
+        table.insert(v52, v_u_38)
+        return v_u_38
+    end
+end
+local function v_u_56(p54)
+    -- upvalues: (copy) v_u_26, (copy) v_u_27, (ref) v_u_13, (copy) v_u_11, (ref) v_u_33
+    if v_u_26[p54] then
+        for _, v55 in pairs(v_u_26) do
+            v55.Visible = false
+        end
+        for _, _ in pairs(v_u_27) do
+
+        end
+        if v_u_26[p54] then
+            if v_u_13 == true then
+                v_u_11:Play()
+            end
+            v_u_13 = true
+            v_u_26[p54].Visible = true
+            v_u_33 = p54
+        end
+    end
+end
+local function v_u_59()
+    -- upvalues: (copy) v_u_26, (ref) v_u_25, (copy) v_u_27, (copy) v_u_56, (ref) v_u_33, (ref) v_u_23
+    for v_u_57, v58 in pairs(v_u_26) do
+        if v_u_25 then
+            if v_u_27[v_u_57] then
+                v_u_27[v_u_57].Visible = true
+                v_u_27[v_u_57].MouseButton1Click:Connect(function()
+                    -- upvalues: (ref) v_u_56, (copy) v_u_57
+                    v_u_56(v_u_57)
+                end)
+            end
+            v58.Visible = v_u_57 == v_u_33
+        elseif v_u_23 and v_u_57 == "FunTab" then
+            if v_u_27[v_u_57] then
+                v_u_27[v_u_57].Visible = true
+                v_u_27[v_u_57].MouseButton1Click:Connect(function()
+                    -- upvalues: (ref) v_u_56, (copy) v_u_57
+                    v_u_56(v_u_57)
+                end)
+            end
+            v58.Visible = v_u_57 == v_u_33
+        else
+            if v_u_27[v_u_57] then
+                v_u_27[v_u_57].Visible = false
+            end
+            v58.Visible = false
+        end
+    end
+end
+local function v61()
+    -- upvalues: (copy) v_u_16, (copy) v_u_19, (copy) v_u_11, (copy) v_u_17, (ref) v_u_33, (copy) v_u_26, (ref) v_u_25, (ref) v_u_23, (copy) v_u_56, (copy) v_u_34
+    v_u_16.Visible = not v_u_16.Visible
+    v_u_19.Visible = not v_u_16.Visible
+    v_u_11:Play()
+    if v_u_16.Visible then
+        v_u_17.Visible = true
+        -- MODIFICAÇÃO: Adicionar nome quando abrir painel
+        if not v_u_16:FindFirstChild("CustomAdminName") then
+            AddCustomNameToUI()
+        end
+        if v_u_33 and v_u_26[v_u_33] then
+            if v_u_25 then
+                v_u_26[v_u_33].Visible = true
+                return
+            elseif v_u_23 then
+                v_u_56("FunTab")
+            else
+                v_u_26[v_u_33].Visible = true
+            end
+        end
+    else
+        v_u_17.Visible = false
+        for _, v60 in pairs(v_u_34) do
+            v60.isOpen = false
+            if v60.frame then
+                v60.frame.Visible = false
+            end
+        end
+    end
+end
+v_u_19.MouseButton1Click:Connect(v61)
+v_u_16:WaitForChild("Close").MouseButton1Click:Connect(v61)
+if v_u_14 and v_u_14.UserId then
+    local v62, v63 = pcall(function()
+        -- upvalues: (copy) v_u_5, (copy) v_u_14
+        return v_u_5:UserOwnsGamePassAsync(v_u_14.UserId, 1431682949)
+    end)
+    local v_u_64
+    if v62 then
+        v_u_23 = v63
+        v_u_64 = v_u_23
+    else
+        v_u_23 = false
+        v_u_64 = v_u_23
+    end
+    local v65 = v_u_26.MainTab
+    local v66 = v_u_26.MorphTab
+    local v67 = v65:WaitForChild("SpawnThing")
+    local v_u_68 = v67:WaitForChild("Name")
+    local v_u_69 = v67:WaitForChild("Trait")
+    local v_u_70 = v67:WaitForChild("Amount")
+    local v_u_71 = v67:WaitForChild("Mutation")
+    local v72 = v67:WaitForChild("GlobalSpawn")
+    local v73 = v67:WaitForChild("ServerSpawn")
+    local v74 = v67:WaitForChild("InsideSpawn")
+    local v_u_75 = v67:WaitForChild("Username")
+    local v76 = v66:WaitForChild("Morph")
+    local v77 = v66:WaitForChild("Mutation")
+    local v78 = v65:WaitForChild("Trait")
+    local v79 = v78:WaitForChild("GlobalStart")
+    local v80 = v78:WaitForChild("ServerStart")
+    local v_u_81 = v78:WaitForChild("Trait")
+    local v_u_82 = v78:WaitForChild("Toggle")
+    local v_u_83 = v_u_33
+    local v_u_84 = v_u_25
+    local v85 = {}
+    for v86 in pairs(v6) do
+        table.insert(v85, v86)
+    end
+    v53(v_u_71, v85)
+    v53(v77, v85)
+    local v87 = {}
+    for v88 in pairs(v7) do
+        table.insert(v87, v88)
+    end
+    v53(v_u_81, v87)
+    local v89 = {}
+    for v90, v91 in pairs(v9) do
+        if type(v91) == "table" and v90 ~= "Gamepasses" then
+            for v92 in pairs(v91) do
+                table.insert(v89, v92)
+            end
+        end
+    end
+    v53(v_u_68, v89)
+    v53(v76, v89)
+    local function v_u_95()
+        -- upvalues: (ref) v_u_84, (copy) v_u_12, (copy) v_u_70, (copy) v_u_68, (copy) v_u_71, (copy) v_u_11, (copy) v_u_20, (copy) v_u_69
+        if v_u_84 then
+            local v93 = v_u_70.Text
+            local v94 = tonumber(v93)
+            if v94 and (v_u_68.Text ~= "Name" and v_u_71.Text ~= "Mutation") then
+                v_u_11:Play()
+                v_u_20:FireServer("SpawnThing", {
+                    ["Amount"] = v94,
+                    ["Name"] = v_u_68.Text,
+                    ["Trait"] = v_u_69.Text,
+                    ["Mutation"] = v_u_71.Text,
+                    ["Global"] = true
+                })
+            else
+                v_u_12:Play()
+            end
+        else
+            v_u_12:Play()
+            return
+        end
+    end
+    local v_u_96 = false
+    local v_u_97 = "Main"
+    v72.MouseButton1Click:Connect(function()
+        -- upvalues: (ref) v_u_96, (copy) v_u_12, (copy) v_u_95, (copy) v_u_30, (copy) v_u_97
+        if v_u_96 then
+            v_u_12:Play()
+        else
+            v_u_96 = true
+            v_u_95()
+            task.wait(v_u_30[v_u_97] or 1)
+            v_u_96 = false
+        end
+    end)
+    local function v_u_100()
+        -- upvalues: (ref) v_u_84, (copy) v_u_12, (copy) v_u_70, (copy) v_u_68, (copy) v_u_71, (copy) v_u_11, (copy) v_u_20, (copy) v_u_69
+        if v_u_84 then
+            local v98 = v_u_70.Text
+            local v99 = tonumber(v98)
+            if v99 and (v_u_68.Text ~= "Name" and v_u_71.Text ~= "Mutation") then
+                v_u_11:Play()
+                v_u_20:FireServer("SpawnThing", {
+                    ["Amount"] = v99,
+                    ["Name"] = v_u_68.Text,
+                    ["Trait"] = v_u_69.Text,
+                    ["Mutation"] = v_u_71.Text,
+                    ["Global"] = false
+                })
+            else
+                v_u_12:Play()
+            end
+        else
+            v_u_12:Play()
+            return
+        end
+    end
+    local v_u_101 = false
+    local v_u_102 = "Main"
+    v73.MouseButton1Click:Connect(function()
+        -- upvalues: (ref) v_u_101, (copy) v_u_12, (copy) v_u_100, (copy) v_u_30, (copy) v_u_102
+        if v_u_101 then
+            v_u_12:Play()
+        else
+            v_u_101 = true
+            v_u_100()
+            task.wait(v_u_30[v_u_102] or 1)
+            v_u_101 = false
+        end
+    end)
+    local function v_u_103()
+        -- upvalues: (ref) v_u_84, (copy) v_u_12, (copy) v_u_68, (copy) v_u_71, (copy) v_u_11, (copy) v_u_20, (copy) v_u_69, (copy) v_u_75
+        if v_u_84 then
+            if v_u_68.Text == "Name" or v_u_71.Text == "Mutation" then
+                v_u_12:Play()
+            else
+                v_u_11:Play()
+                v_u_20:FireServer("SpawnInside", {
+                    ["Name"] = v_u_68.Text,
+                    ["Trait"] = v_u_69.Text,
+                    ["Mutation"] = v_u_71.Text,
+                    ["Username"] = v_u_75.Text
+                })
+            end
+        else
+            v_u_12:Play()
+            return
+        end
+    end
+    local v_u_104 = false
+    local v_u_105 = "Main"
+    v74.MouseButton1Click:Connect(function()
+        -- upvalues: (ref) v_u_104, (copy) v_u_12, (copy) v_u_103, (copy) v_u_30, (copy) v_u_105
+        if v_u_104 then
+            v_u_12:Play()
+        else
+            v_u_104 = true
+            v_u_103()
+            task.wait(v_u_30[v_u_105] or 1)
+            v_u_104 = false
+        end
+    end)
+    local function v_u_106()
+        -- upvalues: (ref) v_u_84, (copy) v_u_12, (copy) v_u_81, (copy) v_u_11, (copy) v_u_20, (copy) v_u_82
+        if v_u_84 then
+            if v_u_81.Text == "Trait" then
+                v_u_12:Play()
+            else
+                v_u_11:Play()
+                v_u_20:FireServer("Trait", {
+                    ["Trait"] = v_u_81.Text,
+                    ["Active"] = v_u_82.Text == "true",
+                    ["Global"] = true
+                })
+            end
+        else
+            v_u_12:Play()
+            return
+        end
+    end
+    local v_u_107 = false
+    local v_u_108 = "Main"
+    v79.MouseButton1Click:Connect(function()
+        -- upvalues: (ref) v_u_107, (copy) v_u_12, (copy) v_u_106, (copy) v_u_30, (copy) v_u_108
+        if v_u_107 then
+            v_u_12:Play()
+        else
+            v_u_107 = true
+            v_u_106()
+            task.wait(v_u_30[v_u_108] or 1)
+            v_u_107 = false
+        end
+    end)
+    local function v_u_109()
+        -- upvalues: (ref) v_u_84, (copy) v_u_12, (copy) v_u_81, (copy) v_u_11, (copy) v_u_20, (copy) v_u_82
+        if v_u_84 then
+            if v_u_81.Text == "Trait" then
+                v_u_12:Play()
+            else
+                v_u_11:Play()
+                v_u_20:FireServer("Trait", {
+                    ["Trait"] = v_u_81.Text,
+                    ["Active"] = v_u_82.Text == "true",
+                    ["Global"] = false
+                })
+            end
+        else
+            v_u_12:Play()
+            return
+        end
+    end
+    local v_u_110 = false
+    local v_u_111 = "Main"
+    v80.MouseButton1Click:Connect(function()
+        -- upvalues: (ref) v_u_110, (copy) v_u_12, (copy) v_u_109, (copy) v_u_30, (copy) v_u_111
+        if v_u_110 then
+            v_u_12:Play()
+        else
+            v_u_110 = true
+            v_u_109()
+            task.wait(v_u_30[v_u_111] or 1)
+            v_u_110 = false
+        end
+    end)
+    local function v_u_112()
+        -- upvalues: (ref) v_u_84, (copy) v_u_12, (copy) v_u_82
+        if v_u_84 then
+            if v_u_82.Text == "true" then
+                v_u_82.Text = "false"
+            else
+                v_u_82.Text = "true"
+            end
+        else
+            v_u_12:Play()
+            return
+        end
+    end
+    local v_u_113 = false
+    local v_u_114 = "Main"
+    v_u_82.MouseButton1Click:Connect(function()
+        -- upvalues: (ref) v_u_113, (copy) v_u_12, (copy) v_u_112, (copy) v_u_30, (copy) v_u_114
+        if v_u_113 then
+            v_u_12:Play()
+        else
+            v_u_113 = true
+            v_u_112()
+            task.wait(v_u_30[v_u_114] or 1)
+            v_u_113 = false
+        end
+    end)
+    local v115 = v65:WaitForChild("Event")
+    local v_u_116 = v115:WaitForChild("Event")
+    local v117 = v115:WaitForChild("GlobalStart")
+    local v118 = v115:WaitForChild("StopEvents")
+    local v119 = v115:WaitForChild("ServerStart")
+    local v120 = {}
+    for v121 in pairs(v8) do
+        table.insert(v120, v121)
+    end
+    v53(v_u_116, v120)
+    local function v_u_122()
+        -- upvalues: (ref) v_u_84, (copy) v_u_12, (copy) v_u_116, (copy) v_u_11, (copy) v_u_20
+        if v_u_84 then
+            if v_u_116.Text == "Event" then
+                v_u_12:Play()
+            else
+                v_u_11:Play()
+                v_u_20:FireServer("Event", {
+                    ["EventName"] = v_u_116.Text,
+                    ["Global"] = true
+                })
+            end
+        else
+            v_u_12:Play()
+            return
+        end
+    end
+    local v_u_123 = false
+    local v_u_124 = "Main"
+    v117.MouseButton1Click:Connect(function()
+        -- upvalues: (ref) v_u_123, (copy) v_u_12, (copy) v_u_122, (copy) v_u_30, (copy) v_u_124
+        if v_u_123 then
+            v_u_12:Play()
+        else
+            v_u_123 = true
+            v_u_122()
+            task.wait(v_u_30[v_u_124] or 1)
+            v_u_123 = false
+        end
+    end)
+    local function v_u_125()
+        -- upvalues: (ref) v_u_84, (copy) v_u_12, (copy) v_u_116, (copy) v_u_11, (copy) v_u_20
+        if v_u_84 then
+            if v_u_116.Text == "Event" then
+                v_u_12:Play()
+            else
+                v_u_11:Play()
+                v_u_20:FireServer("Event", {
+                    ["EventName"] = v_u_116.Text,
+                    ["Global"] = false
+                })
+            end
+        else
+            v_u_12:Play()
+            return
+        end
+    end
+    local v_u_126 = false
+    local v_u_127 = "Main"
+    v119.MouseButton1Click:Connect(function()
+        -- upvalues: (ref) v_u_126, (copy) v_u_12, (copy) v_u_125, (copy) v_u_30, (copy) v_u_127
+        if v_u_126 then
+            v_u_12:Play()
+        else
+            v_u_126 = true
+            v_u_125()
+            task.wait(v_u_30[v_u_127] or 1)
+            v_u_126 = false
+        end
+    end)
+    local function v_u_128()
+        -- upvalues: (ref) v_u_84, (copy) v_u_12, (copy) v_u_116, (copy) v_u_11, (copy) v_u_20
+        if v_u_84 then
+            if v_u_116.Text == "Event" then
+                v_u_12:Play()
+            else
+                v_u_11:Play()
+                v_u_20:FireServer("Event", {
+                    ["EventName"] = v_u_116.Text,
+                    ["Stop"] = true,
+                    ["Global"] = true
+                })
+            end
+        else
+            v_u_12:Play()
+            return
+        end
+    end
+    local v_u_129 = false
+    local v_u_130 = "Main"
+    v118.MouseButton1Click:Connect(function()
+        -- upvalues: (ref) v_u_129, (copy) v_u_12, (copy) v_u_128, (copy) v_u_30, (copy) v_u_130
+        if v_u_129 then
+            v_u_12:Play()
+        else
+            v_u_129 = true
+            v_u_128()
+            task.wait(v_u_30[v_u_130] or 1)
+            v_u_129 = false
+        end
+    end)
+    local v131 = v65:WaitForChild("ServerLuck")
+    local v_u_132 = v131:WaitForChild("Luck")
+    local v_u_133 = v131:WaitForChild("Time")
+    local v_u_134 = v131:WaitForChild("GlobalStart")
+    local v_u_135 = v131:WaitForChild("ServerStart")
+    local function v_u_141(p136)
+        -- upvalues: (ref) v_u_84, (copy) v_u_12, (copy) v_u_132, (copy) v_u_133, (copy) v_u_134, (copy) v_u_135, (copy) v_u_11, (copy) v_u_20
+        if v_u_84 then
+            local v137 = v_u_132.Text or ""
+            local v138 = tonumber(v137)
+            local v139 = v_u_133.Text or ""
+            local v140 = tonumber(v139)
+            if v138 and v140 then
+                if v138 < 0 or v140 <= 0 then
+                    v_u_12:Play()
+                else
+                    v_u_134.Active = false
+                    v_u_135.Active = false
+                    v_u_11:Play()
+                    v_u_20:FireServer("ServerLuck", {
+                        ["Luck"] = v138,
+                        ["Time"] = v140,
+                        ["Global"] = p136
+                    })
+                    task.delay(0.5, function()
+                        -- upvalues: (ref) v_u_134, (ref) v_u_135
+                        v_u_134.Active = true
+                        v_u_135.Active = true
+                    end)
+                end
+            else
+                v_u_12:Play()
+                return
+            end
+        else
+            v_u_12:Play()
+            return
+        end
+    end
+    local function v_u_142()
+        -- upvalues: (copy) v_u_141
+        v_u_141(true)
+    end
+    local v_u_143 = false
+    local v_u_144 = "Main"
+    v_u_134.MouseButton1Click:Connect(function()
+        -- upvalues: (ref) v_u_143, (copy) v_u_12, (copy) v_u_142, (copy) v_u_30, (copy) v_u_144
+        if v_u_143 then
+            v_u_12:Play()
+        else
+            v_u_143 = true
+            v_u_142()
+            task.wait(v_u_30[v_u_144] or 1)
+            v_u_143 = false
+        end
+    end)
+    local function v_u_145()
+        -- upvalues: (copy) v_u_141
+        v_u_141(false)
+    end
+    local v_u_146 = false
+    local v_u_147 = "Main"
+    v_u_135.MouseButton1Click:Connect(function()
+        -- upvalues: (ref) v_u_146, (copy) v_u_12, (copy) v_u_145, (copy) v_u_30, (copy) v_u_147
+        if v_u_146 then
+            v_u_12:Play()
+        else
+            v_u_146 = true
+            v_u_145()
+            task.wait(v_u_30[v_u_147] or 1)
+            v_u_146 = false
+        end
+    end)
+    local v148 = v65:WaitForChild("Announcements")
+    local v_u_149 = v148:WaitForChild("Announcements")
+    local v150 = v148:WaitForChild("GlobalSend")
+    local v151 = v148:WaitForChild("ServerSend")
+    
+    -- MODIFICAÇÃO: Anúncios com seu nome personalizado
+    local function v_u_153()
+        -- upvalues: (ref) v_u_84, (copy) v_u_12, (copy) v_u_149, (copy) v_u_11, (copy) v_u_20
+        if v_u_84 then
+            local v152 = v_u_149.Text
+            if v152 == "" then
+                v_u_12:Play()
+            else
+                v_u_11:Play()
+                -- Alterado para usar seu nome personalizado
+                v_u_20:FireServer("Announcement", {
+                    ["Text"] = "[[👑 botzinYT12 👑]]: " .. v152,
+                    ["Global"] = true
+                })
+            end
+        else
+            v_u_12:Play()
+            return
+        end
+    end
+    local v_u_154 = false
+    local v_u_155 = "Main"
+    v150.MouseButton1Click:Connect(function()
+        -- upvalues: (ref) v_u_154, (copy) v_u_12, (copy) v_u_153, (copy) v_u_30, (copy) v_u_155
+        if v_u_154 then
+            v_u_12:Play()
+        else
+            v_u_154 = true
+            v_u_153()
+            task.wait(v_u_30[v_u_155] or 1)
+            v_u_154 = false
+        end
+    end)
+    local function v_u_156()
+        -- upvalues: (ref) v_u_84, (copy) v_u_12, (copy) v_u_149, (copy) v_u_11, (copy) v_u_20
+        if v_u_84 then
+            if v_u_149.Text == "" then
+                v_u_12:Play()
+            else
+                v_u_11:Play()
+                -- Alterado para usar seu nome personalizado
+                v_u_20:FireServer("Announcement", {
+                    ["Text"] = "[[👑 botzinYT12 👑]]: " .. v_u_149.Text,
+                    ["Global"] = false
+                })
+            end
+        else
+            v_u_12:Play()
+            return
+        end
+    end
+    local v_u_157 = false
+    local v_u_158 = "Main"
+    v151.MouseButton1Click:Connect(function()
+        -- upvalues: (ref) v_u_157, (copy) v_u_12, (copy) v_u_156, (copy) v_u_30, (copy) v_u_158
+        if v_u_157 then
+            v_u_12:Play()
+        else
+            v_u_157 = true
+            v_u_156()
+            task.wait(v_u_30[v_u_158] or 1)
+            v_u_157 = false
+        end
+    end)
+    v22.OnClientEvent:Connect(function(p159)
+        print("[GLOBAL] " .. tostring(p159))
+    end)
+    local v160 = v_u_26.BaseTab
+    local v161 = v160:WaitForChild("Lock")
+    local v162 = v160:WaitForChild("Unlock")
+    local v_u_163 = v160:WaitForChild("Player")
+    local v_u_164 = v160:WaitForChild("LockText")
+    local v165 = v_u_26.FunTab
+    local v_u_166 = v165:WaitForChild("Player")
+    local v_u_167 = v165:WaitForChild("Command")
+    local v_u_168 = v165:WaitForChild("Excute")
+    local v169 = v66:WaitForChild("Excute")
+    local v170 = v66:WaitForChild("Reset")
+    local v_u_171 = v66:WaitForChild("Player")
+    local v_u_172 = v66:WaitForChild("Morph")
+    local v_u_173 = v66:WaitForChild("Mutation")
+    v53(v_u_167, v28)
+    local v_u_174 = false
+    local function v_u_178()
+        -- upvalues: (ref) v_u_174, (copy) v_u_168
+        if not v_u_174 then
+            v_u_174 = true
+            local v175 = tick()
+            local v176 = 10
+            while v176 > 0 do
+                local v177 = 10 - (tick() - v175)
+                v176 = math.ceil(v177)
+                if v176 <= 5 then
+                    v_u_168.Text = tostring(v176)
+                else
+                    v_u_168.Text = "Cooldown"
+                end
+                task.wait(1)
+            end
+            v_u_168.Text = "Execute"
+            v_u_168.Active = true
+            v_u_174 = false
+        end
+    end
+    local function v_u_180()
+        -- upvalues: (ref) v_u_84, (ref) v_u_64, (copy) v_u_12, (copy) v_u_166, (copy) v_u_167, (copy) v_u_11, (copy) v_u_20, (ref) v_u_24, (copy) v_u_168, (copy) v_u_178
+        if v_u_84 or v_u_64 then
+            if v_u_166.Text == "" or v_u_167.Text == "Command" then
+                v_u_12:Play()
+            else
+                v_u_11:Play()
+                v_u_20:FireServer("FunCommand", {
+                    ["Target"] = v_u_166.Text,
+                    ["Command"] = v_u_167.Text
+                })
+                local v179 = tick()
+                if not v_u_84 and v179 - v_u_24 >= 10 then
+                    v_u_24 = v179
+                    v_u_168.Active = false
+                    v_u_168.Text = "Cooldown"
+                    task.spawn(v_u_178)
+                    return
+                end
+            end
+        else
+            v_u_12:Play()
+        end
+    end
+    local v_u_181 = false
+    local v_u_182 = "Fun"
+    v_u_168.MouseButton1Click:Connect(function()
+        -- upvalues: (ref) v_u_181, (copy) v_u_12, (copy) v_u_180, (copy) v_u_30, (copy) v_u_182
+        if v_u_181 then
+            v_u_12:Play()
+        else
+            v_u_181 = true
+            v_u_180()
+            task.wait(v_u_30[v_u_182] or 1)
+            v_u_181 = false
+        end
+    end)
+    local function v_u_183()
+        -- upvalues: (ref) v_u_84, (copy) v_u_12, (copy) v_u_171, (copy) v_u_172, (copy) v_u_173, (copy) v_u_11, (copy) v_u_20
+        if v_u_84 then
+            if v_u_171.Text == "" or (v_u_172.Text == "Name" or v_u_173.Text == "Mutation") then
+                v_u_12:Play()
+            else
+                v_u_11:Play()
+                v_u_20:FireServer("Morph", {
+                    ["Target"] = v_u_171.Text,
+                    ["Thing"] = v_u_172.Text,
+                    ["Mutation"] = v_u_173.Text
+                })
+            end
+        else
+            v_u_12:Play()
+            return
+        end
+    end
+    local v_u_184 = false
+    local v_u_185 = "Morph"
+    v169.MouseButton1Click:Connect(function()
+        -- upvalues: (ref) v_u_184, (copy) v_u_12, (copy) v_u_183, (copy) v_u_30, (copy) v_u_185
+        if v_u_184 then
+            v_u_12:Play()
+        else
+            v_u_184 = true
+            v_u_183()
+            task.wait(v_u_30[v_u_185] or 1)
+            v_u_184 = false
+        end
+    end)
+    local function v_u_186()
+        -- upvalues: (ref) v_u_84, (copy) v_u_12, (copy) v_u_171, (copy) v_u_11, (copy) v_u_20
+        if v_u_84 then
+            if v_u_171.Text == "" then
+                v_u_12:Play()
+            else
+                v_u_11:Play()
+                v_u_20:FireServer("ResetMorph", {
+                    ["Target"] = v_u_171.Text
+                })
+            end
+        else
+            v_u_12:Play()
+            return
+        end
+    end
+    local v_u_187 = false
+    local v_u_188 = "Morph"
+    v170.MouseButton1Click:Connect(function()
+        -- upvalues: (ref) v_u_187, (copy) v_u_12, (copy) v_u_186, (copy) v_u_30, (copy) v_u_188
+        if v_u_187 then
+            v_u_12:Play()
+        else
+            v_u_187 = true
+            v_u_186()
+            task.wait(v_u_30[v_u_188] or 1)
+            v_u_187 = false
+        end
+    end)
+    local function v_u_189()
+        -- upvalues: (ref) v_u_84, (copy) v_u_12, (copy) v_u_164, (copy) v_u_163, (copy) v_u_11, (copy) v_u_20
+        if v_u_84 then
+            if v_u_164.Text == "" and v_u_163.Text == "" then
+                v_u_12:Play()
+            else
+                v_u_11:Play()
+                v_u_20:FireServer("LockBase", {
+                    ["Username"] = v_u_163.Text,
+                    ["Duration"] = v_u_164.Text
+                })
+            end
+        else
+            v_u_12:Play()
+            return
+        end
+    end
+    local v_u_190 = false
+    local v_u_191 = "Base"
+    v161.MouseButton1Click:Connect(function()
+        -- upvalues: (ref) v_u_190, (copy) v_u_12, (copy) v_u_189, (copy) v_u_30, (copy) v_u_191
+        if v_u_190 then
+            v_u_12:Play()
+        else
+            v_u_190 = true
+            v_u_189()
+            task.wait(v_u_30[v_u_191] or 1)
+            v_u_190 = false
+        end
+    end)
+    local function v_u_192()
+        -- upvalues: (ref) v_u_84, (copy) v_u_12, (copy) v_u_163, (copy) v_u_11, (copy) v_u_20
+        if v_u_84 then
+            if v_u_163.Text == "" then
+                v_u_12:Play()
+            else
+                v_u_11:Play()
+                v_u_20:FireServer("UnlockBase", {
+                    ["Username"] = v_u_163.Text
+                })
+            end
+        else
+            v_u_12:Play()
+            return
+        end
+    end
+    local v_u_193 = false
+    local v_u_194 = "Base"
+    v162.MouseButton1Click:Connect(function()
+        -- upvalues: (ref) v_u_193, (copy) v_u_12, (copy) v_u_192, (copy) v_u_30, (copy) v_u_194
+        if v_u_193 then
+            v_u_12:Play()
+        else
+            v_u_193 = true
+            v_u_192()
+            task.wait(v_u_30[v_u_194] or 1)
+            v_u_193 = false
+        end
+    end)
+    local v195 = v_u_26.StatsTab
+    local v_u_196 = v195:WaitForChild("Player")
+    local v_u_197 = v195:WaitForChild("Stats")
+    local v_u_198 = v195:WaitForChild("Amount")
+    local v199 = v195:WaitForChild("Excute")
+    local v200 = v195:WaitForChild("Reset")
+    v53(v_u_197, v29)
+    local function v_u_205()
+        -- upvalues: (ref) v_u_84, (copy) v_u_12, (copy) v_u_196, (copy) v_u_197, (copy) v_u_198, (copy) v_u_11, (copy) v_u_20
+        if v_u_84 then
+            local v201 = v_u_196.Text
+            local v202 = v_u_197.Text
+            local v203 = v_u_198.Text
+            local v204 = tonumber(v203)
+            if v201 == "" or (v202 == "Stats" or not v204) then
+                v_u_12:Play()
+            else
+                v_u_11:Play()
+                v_u_20:FireServer("UpdateStats", {
+                    ["Target"] = v201,
+                    ["Stat"] = v202,
+                    ["Amount"] = v204
+                })
+            end
+        else
+            v_u_12:Play()
+            return
+        end
+    end
+    local v_u_206 = false
+    local v_u_207 = "Stats"
+    v199.MouseButton1Click:Connect(function()
+        -- upvalues: (ref) v_u_206, (copy) v_u_12, (copy) v_u_205, (copy) v_u_30, (copy) v_u_207
+        if v_u_206 then
+            v_u_12:Play()
+        else
+            v_u_206 = true
+            v_u_205()
+            task.wait(v_u_30[v_u_207] or 1)
+            v_u_206 = false
+        end
+    end)
+    local function v_u_210()
+        -- upvalues: (ref) v_u_84, (copy) v_u_12, (copy) v_u_196, (copy) v_u_197, (copy) v_u_11, (copy) v_u_20
+        if v_u_84 then
+            local v208 = v_u_196.Text
+            local v209 = v_u_197.Text
+            if v208 == "" or v209 == "Stats" then
+                v_u_12:Play()
+            else
+                v_u_11:Play()
+                v_u_20:FireServer("ResetStats", {
+                    ["Target"] = v208,
+                    ["Stat"] = v209
+                })
+            end
+        else
+            v_u_12:Play()
+            return
+        end
+    end
+    local v_u_211 = false
+    local v_u_212 = "Stats"
+    v200.MouseButton1Click:Connect(function()
+        -- upvalues: (ref) v_u_211, (copy) v_u_12, (copy) v_u_210, (copy) v_u_30, (copy) v_u_212
+        if v_u_211 then
+            v_u_12:Play()
+        else
+            v_u_211 = true
+            v_u_210()
+            task.wait(v_u_30[v_u_212] or 1)
+            v_u_211 = false
+        end
+    end)
+    local v213 = v_u_26.ModTab
+    local v_u_214 = v213:WaitForChild("Player")
+    local v215 = v213:WaitForChild("Kick")
+    local v216 = v213:WaitForChild("Ban")
+    local v217 = v213:WaitForChild("Unban")
+    local v_u_218 = v213:WaitForChild("Reason")
+    local function v_u_219()
+        -- upvalues: (ref) v_u_84, (copy) v_u_12, (copy) v_u_214, (copy) v_u_11, (copy) v_u_20, (copy) v_u_218
+        if v_u_84 then
+            if v_u_214.Text ~= "" then
+                v_u_11:Play()
+                v_u_20:FireServer("ModeratePlayer", {
+                    ["Target"] = v_u_214.Text,
+                    ["Type"] = "Kick",
+                    ["Reason"] = v_u_218.Text
+                })
+            end
+        else
+            v_u_12:Play()
+        end
+    end
+    local v_u_220 = false
+    local v_u_221 = "Mod"
+    v215.MouseButton1Click:Connect(function()
+        -- upvalues: (ref) v_u_220, (copy) v_u_12, (copy) v_u_219, (copy) v_u_30, (copy) v_u_221
+        if v_u_220 then
+            v_u_12:Play()
+        else
+            v_u_220 = true
+            v_u_219()
+            task.wait(v_u_30[v_u_221] or 1)
+            v_u_220 = false
+        end
+    end)
+    local function v_u_222()
+        -- upvalues: (ref) v_u_84, (copy) v_u_12, (copy) v_u_214, (copy) v_u_11, (copy) v_u_20, (copy) v_u_218
+        if v_u_84 then
+            if game:GetService("RunService"):IsStudio() then
+                warn("Ban is disabled in Studio for security reasons.")
+            elseif v_u_214.Text ~= "" then
+                v_u_11:Play()
+                v_u_20:FireServer("ModeratePlayer", {
+                    ["Target"] = v_u_214.Text,
+                    ["Type"] = "Ban",
+                    ["Reason"] = v_u_218.Text
+                })
+                return
+            end
+        else
+            v_u_12:Play()
+        end
+    end
+    local v_u_223 = false
+    local v_u_224 = "Mod"
+    v216.MouseButton1Click:Connect(function()
+        -- upvalues: (ref) v_u_223, (copy) v_u_12, (copy) v_u_222, (copy) v_u_30, (copy) v_u_224
+        if v_u_223 then
+            v_u_12:Play()
+        else
+            v_u_223 = true
+            v_u_222()
+            task.wait(v_u_30[v_u_224] or 1)
+            v_u_223 = false
+        end
+    end)
+    local function v_u_225()
+        -- upvalues: (ref) v_u_84, (copy) v_u_12, (copy) v_u_214, (copy) v_u_11, (copy) v_u_20
+        if v_u_84 then
+            if game:GetService("RunService"):IsStudio() then
+                warn("Unban is disabled in Studio for security reasons.")
+            elseif v_u_214.Text ~= "" then
+                v_u_11:Play()
+                v_u_20:FireServer("ModeratePlayer", {
+                    ["Target"] = v_u_214.Text,
+                    ["Type"] = "Unban"
+                })
+                return
+            end
+        else
+            v_u_12:Play()
+        end
+    end
+    local v_u_226 = false
+    local v_u_227 = "Mod"
+    v217.MouseButton1Click:Connect(function()
+        -- upvalues: (ref) v_u_226, (copy) v_u_12, (copy) v_u_225, (copy) v_u_30, (copy) v_u_227
+        if v_u_226 then
+            v_u_12:Play()
+        else
+            v_u_226 = true
+            v_u_225()
+            task.wait(v_u_30[v_u_227] or 1)
+            v_u_226 = false
+        end
+    end)
+    v_u_20:FireServer("CheckWhitelistStatus")
+    local v_u_228 = v213:WaitForChild("BannedList")
+    v_u_20.OnClientEvent:Connect(function(p229, p230)
+        -- upvalues: (copy) v_u_228, (ref) v_u_84, (ref) v_u_64, (copy) v_u_15, (copy) v_u_19, (ref) v_u_83, (copy) v_u_59, (copy) v_u_56
+        if p229 == "UpdateBanList" then
+            for _, v231 in ipairs(v_u_228:GetChildren()) do
+                if v231:IsA("TextLabel") and v231.Name == "BannedPlayer" then
+                    v231:Destroy()
+                end
+            end
+            if not v_u_228:FindFirstChild("UIListLayout") then
+                local v232 = Instance.new("UIListLayout")
+                v232.Name = "UIListLayout"
+                v232.Parent = v_u_228
+                v232.Padding = UDim.new(0, 5)
+                v232.SortOrder = Enum.SortOrder.LayoutOrder
+            end
+            local v233 = v_u_228:WaitForChild("Template")
+            for v234, v235 in ipairs(p230) do
+                local v236 = v233:Clone()
+                v236.Visible = true
+                v236.Name = "BannedPlayer"
+                v236.Text = v235.Username .. " | " .. v235.Reason .. " | Banned by: " .. v235.BannedBy
+                v236.LayoutOrder = v234
+                v236.Parent = v_u_228
+            end
+            v_u_228.CanvasSize = UDim2.new(0, 0, 0, v_u_228.UIListLayout.AbsoluteContentSize.Y)
+        elseif p229 == "WhitelistStatus" then
+            v_u_84 = p230.IsWhitelisted
+            if not (v_u_84 or v_u_64) then
+                v_u_15:Destroy()
+                return
+            end
+            v_u_19.Visible = true
+            if v_u_84 then
+                v_u_83 = "MainTab"
+            elseif v_u_64 then
+                v_u_83 = "FunTab"
+            end
+            v_u_59()
+            v_u_56(v_u_83)
+        end
+    end)
+    for _, v237 in pairs(v_u_26) do
+        v237.Visible = false
+    end
+    v_u_16.Visible = false
+    v_u_17.Visible = false
+    v_u_19.Visible = false
+else
+    warn("Player or UserId not available")
+    v_u_15:Destroy()
+end
