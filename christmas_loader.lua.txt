@@ -297,7 +297,7 @@ spawn(function()
         end
     end
     
-    wait(0.8)
+    wait(0.5)
     
     -- Fade out épico
     StatusText.Text = "🎄 Carregamento completo! 🎄"
@@ -318,11 +318,11 @@ spawn(function()
         BackgroundTransparency = 1
     }):Play()
     
-    wait(0.8)
+    wait(0.3)
     LoadingFrame:Destroy()
 end)
 
-wait(6)
+wait(3)
 
 -- ==================== MINI GUI MELHORADA ====================
 local MainFrame = Instance.new("Frame")
